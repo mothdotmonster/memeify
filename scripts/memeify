@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#memeify by eri
+#USAGE: memeify [in] [out] [top text] [bottom text]
+#requires Impact to be installed
+#only works on still images
+
+magick convert $1 -resize 1024x99999 tmp0.png   #there is probably a better way to do this
+
+magick convert tmp0.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$3" -composite tmp1.png  #top caption
+magick convert tmp1.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity south label:"$4" -composite $2        #bottom caption
+
+rm tmp*.png     #cleanup
