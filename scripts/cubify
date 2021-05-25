@@ -6,8 +6,8 @@
 # currently doesn't work with gifs but i might add that later
 
 convert $1 -resize 260x301! -alpha set -background none -shear 0x30 -rotate -60 -trim top.png               #make the top face
-convert $1 -resize 260x301! -alpha set -background none -shear 0x30 -level 20%,100%,0.75 left.png           #make the left face
-convert $1 -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.5 right.png          #make the right face
+convert $1 -resize 260x301! -alpha set -background none -shear 0x30 -level 20%,100%,0.9 left.png           #make the left face
+convert $1 -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.8 right.png          #make the right face
 
 convert left.png right.png +append \( top.png -repage +0-149 \) -background none -layers merge +repage $2   #combine faces
 
