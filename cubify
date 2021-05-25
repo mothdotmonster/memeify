@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # cubify by eri
-# USAGE: meme-cubify [in] [out]
+# USAGE: cubify [in] [out]
 # you should probably use a transparent image format
 # currently doesn't work with gifs but i might add that later
 
