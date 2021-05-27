@@ -5,7 +5,7 @@
 #requires Impact to be installed
 #only works on still images
 
-magick convert $1 -resize 1024x99999 $2   #there is probably a better way to do this
+magick convert $1 -resize 1024x $2   #make sure image is 1024px wide
 
 magick convert $2 -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$3" -composite $2      #top caption
 

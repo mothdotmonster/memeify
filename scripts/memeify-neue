@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#memeify-neue by eri
+#USAGE: memeify-neue [in] [out] [text]
+
+magick convert $1 -resize 1024x $2      #make sure image is 1024px wide
+
+magick -background white -fill black -size 1024x -pointsize 72 -gravity northwest caption:"$3" tmp.png      #generate label
+
+magick montage tmp.png $2 -geometry +0+0 -tile 1x $2    #combine images
+
+rm tmp.png      #cleanup
