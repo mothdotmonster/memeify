@@ -14,3 +14,10 @@ USAGE: `cubify [in] [out]`
 adds "meme" captions to images
 
 USAGE: `memeify [in] [out] [top text] [bottom text (optional)]`
+
+# memeify-neue
+![memeify-neue](images/neue.png)
+
+adds modern "meme" captions to images
+
+USAGE: `memeify-neue [in] [out] [text]`
