@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#deepfry by eri
+#USAGE: deepfry [in] [out] [top text (optional)] [bottom text (optional)]
+#make sure memeify is in your $PATH
+#only works on still images
+
+cp "$1" tmp0.png    #there is a better way to do this for sure
+
+if  (( "$#" > 2 )); then         #check for caption text
+    memeify "$1" tmp0.png "$3" "$4"  #add caption if requested
+fi
+
+magick convert tmp0.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform tmp1.jpg  #deep fry
+magick convert tmp1.jpg "$2"  #output
+
+rm tmp0.png tmp1.jpg  #cleanup
