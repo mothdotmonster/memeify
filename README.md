@@ -1,10 +1,6 @@
 # magick-memes
 memey scripts for imagemagick
 
-TODO:
-- switch to using mktemp instead of just hoping the user doesn't care about anything with tmp in the name
-- figure out why deepfry gives a warning when run with only top text
-
 # cubify
 ![cubify](images/cubify.png)
 
