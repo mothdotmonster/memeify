@@ -5,11 +5,14 @@
 #requires Impact to be installed
 #only works on still images
 
-magick convert $1 -resize 1024x $2   #make sure image is 1024px wide
-
-magick convert $2 -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$3" -composite $2      #top caption
-
-if [ "$#" = 4 ]     #check if we're asked for a bottom caption
-    then
+if [ -n "$3" ]; then #check if top caption is actually empty
+    magick convert $1 -resize 1024x $2   #make sure image is 1024px wide
+    magick convert $2 -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$3" -composite $2      #top caption
+    else
+    echo "you forgot the caption!"
+fi
+if [ "$#" = 4 ]; then    #check if we're asked for a bottom caption
+    if [ -n "$4" ]; then #check if bottom caption is actually empty
     magick convert $2 -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity south label:"$4" -composite $2  #bottom caption
     fi
+fi

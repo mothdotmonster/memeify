@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#deepfry-gui by eri
+
+IN=$(zenity --file-selection --title=input file)    #ask for file to deepfry
+if zenity --question --text="do you want to add a caption?"; then
+    CAP=$(zenity --forms --title=memeify --text="caption" --add-entry="top text" --add-entry="bottom text (optional)")  #ask for caption
+    IFS='|' 
+    read -a CAP <<<"$CAP"   #turn zenity output into an array
+    IFS=' '
+fi
+
+TIME=$(date "+%Y.%m.%d-%H.%M.%S")   #get time for timestamp
+
+deepfry "$IN" ~/Pictures/deepfried_"$TIME".png "${CAP[0]}" "${CAP[1]}"   #call deepfry
+
+xdg-open ~/Pictures/deepfried_"$TIME".png   #open image

@@ -9,8 +9,10 @@ TMP=$(mktemp -d)     #make temporary directory
 
 cp "$1" "$TMP"/tmp0.png    #there is a better way to do this for sure
 
-if  (( "$#" > 2 )); then         #check for caption text
+if  (( "$#" > 2 )); then    #check for caption text
+    if [ -n "$3" ]; then    #make sure caption isn' empty
     memeify "$1" "$TMP"/tmp0.png "$3" "$4"  #add caption if requested
+    fi
 fi
 
 magick convert "$TMP"/tmp0.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$TMP"/tmp1.jpg  #deep fry
