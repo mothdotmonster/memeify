@@ -4,4 +4,4 @@
 
 memey scripts for imagemagick
 
-USAGE: `memeify [-mqdlie] input output 'top text' 'bottom text'`
+USAGE: `memeify [-mqdlies] input output 'top text' 'bottom text'`
