@@ -3,14 +3,15 @@
 TMP=$(mktemp -d)     #make temporary directory
 
 function usage {
-        echo "usage: $(basename $0) [-mqdlie] input output 'top text' 'bottom text'" 2>&1
+        echo "usage: $(basename $0) [-mqdlies] input output 'top text' 'bottom text'" 2>&1
         echo '   -m   add caption'
         echo '   -q   cubify it'
         echo '   -d   deep fry it'
         echo '   -l   liquid rescale it'
         echo '   -i   implode it'
         echo '   -e   explode it'
-        echo 'operations are done in order from left to right, and can be used multiple'
+        echo '   -s   swirl it'
+        echo 'operations are done in order from left to right, and can be used multiple times'
         exit 1
 }
 
@@ -19,7 +20,7 @@ if [[ ${#} -eq 0 ]]; then
 fi
 
 # Define list of arguments expected in the input
-optstring=":mqdlie"
+optstring=":mqdlies"
 
 magick convert $2 "$TMP"/temp.png #create temp file
 
@@ -54,6 +55,9 @@ while getopts ${optstring} arg; do
     ;;
     e)
         magick convert "$TMP"/temp.png -implode -1 "$TMP"/temp.png
+    ;;
+    s)
+        magick convert "$TMP"/temp.png -swirl 180 "$TMP"/temp.png 
     ;;
   esac
 done
