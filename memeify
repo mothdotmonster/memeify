@@ -1,0 +1,49 @@
+#!/bin/bash
+
+TMP=$(mktemp -d)     #make temporary directory
+
+function usage {
+        echo "usage: $(basename $0) [-mqd] input output 'top text' 'bottom text'" 2>&1
+        echo '   -m   add caption'
+        echo '   -q   cubify it'
+        echo '   -d   deep fry it'
+        exit 1
+}
+
+if [[ ${#} -eq 0 ]]; then
+   usage
+fi
+
+# Define list of arguments expected in the input
+optstring=":mqd"
+
+magick convert $2 "$TMP"/temp.png #create temp file
+
+while getopts ${optstring} arg; do
+  case "${arg}" in
+    m)
+        magick convert "$TMP"/temp.png -resize 1024x "$TMP"/temp.png   #make sure image is 1024px wide
+        if [ -n "$4" ]; then #check if top caption is actually empty
+            magick convert "$TMP"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$4" -composite "$TMP"/temp.png      #top caption
+        fi
+        if [ "$#" = 5 ]; then    #check if we're asked for a bottom caption
+            if [ -n "$5" ]; then #check if bottom caption is actually empty
+                magick convert "$TMP"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity south label:"$5" -composite "$TMP"/temp.png  #bottom caption
+            fi
+        fi
+    ;;  
+    q)
+        convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -rotate -60 -trim   "$TMP"/top.png     #make the top face
+        convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -level 20%,100%,0.9 "$TMP"/left.png    #make the left face
+        convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.8 "$TMP"/right.png   #make the right face
+        convert "$TMP"/left.png "$TMP"/right.png +append \( "$TMP"/top.png -repage +0-149 \) -background none -layers merge +repage "$TMP"/temp.png   #combine faces
+    ;;
+    d)
+        magick convert "$TMP"/temp.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$TMP"/fried.jpg
+        magick convert "$TMP"/fried.jpg "$TMP"/temp.png
+    ;;
+  esac
+done
+
+magick convert "$TMP"/temp.png $3 #output file
+rm -r "$TMP"   #remove temporary directory
