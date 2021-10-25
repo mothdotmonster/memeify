@@ -3,10 +3,11 @@
 TMP=$(mktemp -d)     #make temporary directory
 
 function usage {
-        echo "usage: $(basename $0) [-mqd] input output 'top text' 'bottom text'" 2>&1
+        echo "usage: $(basename $0) [-mqdl] input output 'top text' 'bottom text'" 2>&1
         echo '   -m   add caption'
         echo '   -q   cubify it'
         echo '   -d   deep fry it'
+        echo '   -l   content aware scale it'
         exit 1
 }
 
@@ -15,7 +16,7 @@ if [[ ${#} -eq 0 ]]; then
 fi
 
 # Define list of arguments expected in the input
-optstring=":mqd"
+optstring=":mqdl"
 
 magick convert $2 "$TMP"/temp.png #create temp file
 
@@ -41,6 +42,9 @@ while getopts ${optstring} arg; do
     d)
         magick convert "$TMP"/temp.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$TMP"/fried.jpg
         magick convert "$TMP"/fried.jpg "$TMP"/temp.png
+    ;;
+    l)
+        magick convert "$TMP"/temp.png -liquid-rescale 50x50%\! "$TMP"/temp.png
     ;;
   esac
 done
