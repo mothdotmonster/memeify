@@ -10,21 +10,9 @@ USAGE: `cubify [in] [out]`
 
 # memeify 
 ![memeify](images/memeify.png)
-
-adds "meme" captions to images
-
-USAGE: `memeify [in] [out] [top text] [bottom text (optional)]`
-
-# memeify-neue
-![memeify-neue](images/neue.png)
-
-adds modern "meme" captions to images
-
-USAGE: `memeify-neue [in] [out] [text]`
-
-# deepfry
+![memeify-neue](images/neue.png
 ![deepfry](images/deepfry.png)
 
-"deep fries" images, and optionally calls `memeify` to add captions
+adds "meme" captions to images, and optionally deep fries
 
-USAGE: `deepfry [in] [out] [top text (optional)] [bottom text (optional)]`
+USAGE: `memeify [-mnd] [in] [out] [top text] [bottom text (optional)]`
