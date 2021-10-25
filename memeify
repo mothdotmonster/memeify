@@ -7,7 +7,7 @@ function usage {
         echo '   -m   add caption'
         echo '   -q   cubify it'
         echo '   -d   deep fry it'
-        echo '   -l   content aware scale it'
+        echo '   -l   liquid rescale it'
         exit 1
 }
 
