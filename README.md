@@ -1,4 +1,4 @@
-# magick-memes
+# memeify
 
 ![demo image](demo.png)
 
