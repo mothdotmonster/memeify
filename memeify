@@ -3,7 +3,7 @@
 TMP=$(mktemp -d)     #make temporary directory
 
 function usage {
-        echo "usage: $(basename $0) [-mqdlies] input output 'top text' 'bottom text'" 2>&1
+        echo "usage: memeify [-mqdliesn] input output 'top text' 'bottom text'" 2>&1
         echo '   -m   add caption'
         echo '   -q   cubify it'
         echo '   -d   deep fry it'
@@ -11,6 +11,7 @@ function usage {
         echo '   -i   implode it'
         echo '   -e   explode it'
         echo '   -s   swirl it'
+        echo '   -n   invert it'
         echo 'operations are done in order from left to right, and can be used multiple times'
         exit 1
 }
@@ -19,10 +20,9 @@ if [[ ${#} -eq 0 ]]; then
    usage
 fi
 
-# Define list of arguments expected in the input
-optstring=":mqdlies"
+optstring=":mqdliesn" # define list of arguments expected in the input
 
-magick convert $2 "$TMP"/temp.png #create temp file
+magick convert "$2" "$TMP"/temp.png #create temp file
 
 while getopts ${optstring} arg; do
   case "${arg}" in
@@ -38,29 +38,32 @@ while getopts ${optstring} arg; do
         fi
     ;;  
     q)
-        convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -rotate -60 -trim   "$TMP"/top.png     #make the top face
-        convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -level 20%,100%,0.9 "$TMP"/left.png    #make the left face
-        convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.8 "$TMP"/right.png   #make the right face
-        convert "$TMP"/left.png "$TMP"/right.png +append \( "$TMP"/top.png -repage +0-149 \) -background none -layers merge +repage "$TMP"/temp.png   #combine faces
+        magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -rotate -60 -trim   "$TMP"/top.png     #make the top face
+        magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -level 20%,100%,0.9 "$TMP"/left.png    #make the left face
+        magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.8 "$TMP"/right.png   #make the right face
+        magick convert "$TMP"/left.png "$TMP"/right.png +append \( "$TMP"/top.png -repage +0-149 \) -background none -layers merge +repage "$TMP"/temp.png   #combine faces
     ;;
     d)
-        magick convert "$TMP"/temp.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$TMP"/fried.jpg
-        magick convert "$TMP"/fried.jpg "$TMP"/temp.png
+        magick convert "$TMP"/temp.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$TMP"/fried.jpg #delicious deep fried goodness
+        magick convert "$TMP"/fried.jpg "$TMP"/temp.png #put everything in place
     ;;
     l)
-        magick convert "$TMP"/temp.png -liquid-rescale 50x50%\! "$TMP"/temp.png
+        magick convert "$TMP"/temp.png -liquid-rescale 50x50%\! "$TMP"/temp.png 
     ;;
     i)
-        magick convert "$TMP"/temp.png -implode 0.5 "$TMP"/temp.png
+        magick convert "$TMP"/temp.png -implode 0.5 "$TMP"/temp.png 
     ;;
     e)
-        magick convert "$TMP"/temp.png -implode -1 "$TMP"/temp.png
+        magick convert "$TMP"/temp.png -implode -1 "$TMP"/temp.png 
     ;;
     s)
         magick convert "$TMP"/temp.png -swirl 180 "$TMP"/temp.png 
     ;;
+    n)
+        magick convert "$TMP"/temp.png -channel RGB -negate "$TMP"/temp.png 
+    ;;
   esac
 done
 
-magick convert "$TMP"/temp.png $3 #output file
+magick convert "$TMP"/temp.png "$3" #output file
 rm -r "$TMP"   #remove temporary directory
