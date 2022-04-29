@@ -2,68 +2,162 @@
 
 TMP=$(mktemp -d)     #make temporary directory
 
-function usage {
-        echo "usage: memeify [-mqdliesn] input output 'top text' 'bottom text'" 2>&1
-        echo '   -m   add caption'
-        echo '   -q   cubify it'
-        echo '   -d   deep fry it'
-        echo '   -l   liquid rescale it'
-        echo '   -i   implode it'
-        echo '   -e   explode it'
-        echo '   -s   swirl it'
-        echo '   -n   invert it'
-        echo 'operations are done in order from left to right, and can be used multiple times'
-        exit 1
+usage(){
+	echo "usage: memeify input output [args]"
+	echo '-m / --caption "text" "text"  add caption'
+	echo '-q / --cubify                 cubify it'
+	echo '-d / --deep-fry               deep fry it'
+	echo '-l / --liquid-rescale         liquid rescale it'
+	echo '-i / --implode                implode it'
+	echo '-e / --explode                explode it'
+	echo '-s / --swirl                  swirl it'
+	echo '-n / --invert                 invert it'
+	exit 1
+}
+
+caption(){
+	magick convert "$TMP"/temp.png -resize 1024x "$TMP"/temp.png   #make sure image is 1024px wide
+	if [ -n "$1" ]; then #check if top caption is actually empty
+		magick convert "$TMP"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$1" -composite "$TMP"/temp.png      #top caption
+	fi
+	if [ "$#" = 2 ]; then    #check if we're asked for a bottom caption
+		if [[ "$2" != -* ]]; then # check if it's actually a flag
+			if [ -n "$2" ]; then #check if bottom caption is actually empty
+				magick convert "$TMP"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity south label:"$2" -composite "$TMP"/temp.png  #bottom caption
+			fi
+		fi
+	fi
+}
+
+cubify(){
+	magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -rotate -60 -trim   "$TMP"/top.png     #make the top face
+	magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -level 20%,100%,0.9 "$TMP"/left.png    #make the left face
+	magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.8 "$TMP"/right.png   #make the right face
+	magick convert "$TMP"/left.png "$TMP"/right.png +append \( "$TMP"/top.png -repage +0-149 \) -background none -layers merge +repage "$TMP"/temp.png   #combine faces
+}
+
+deepfry(){
+	magick convert "$TMP"/temp.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$TMP"/fried.jpg #delicious deep fried goodness
+  magick convert "$TMP"/fried.jpg "$TMP"/temp.png #put everything in place
+}
+
+lqr(){
+	magick convert "$TMP"/temp.png -liquid-rescale 50x50%\! "$TMP"/temp.png 
+}
+
+implode(){
+	magick convert "$TMP"/temp.png -implode 0.5 "$TMP"/temp.png 
+}
+
+explode(){
+	magick convert "$TMP"/temp.png -implode -1 "$TMP"/temp.png 
+}
+
+swirl(){
+	magick convert "$TMP"/temp.png -swirl 180 "$TMP"/temp.png
+}
+
+invert(){
+	magick convert "$TMP"/temp.png -channel RGB -negate "$TMP"/temp.png 
 }
 
 if [[ ${#} -eq 0 ]]; then
-   usage
+  usage
 fi
 
-optstring=":mqdliesn" # define list of arguments expected in the input
+magick convert "$1" "$TMP"/temp.png #create temp file
+out="$1"
+shift
+if [[ $1 != -* ]]; then # check if they asked for an output file or if they went straight to args
+	out="$1"
+	shift
+fi
 
-magick convert "$2" "$TMP"/temp.png #create temp file
-
-while getopts ${optstring} arg; do
-  case "${arg}" in
-    m)
-        magick convert "$TMP"/temp.png -resize 1024x "$TMP"/temp.png   #make sure image is 1024px wide
-        if [ -n "$4" ]; then #check if top caption is actually empty
-            magick convert "$TMP"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$4" -composite "$TMP"/temp.png      #top caption
-        fi
-        if [ "$#" = 5 ]; then    #check if we're asked for a bottom caption
-            if [ -n "$5" ]; then #check if bottom caption is actually empty
-                magick convert "$TMP"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity south label:"$5" -composite "$TMP"/temp.png  #bottom caption
-            fi
-        fi
-    ;;  
-    q)
-        magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -rotate -60 -trim   "$TMP"/top.png     #make the top face
-        magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -level 20%,100%,0.9 "$TMP"/left.png    #make the left face
-        magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.8 "$TMP"/right.png   #make the right face
-        magick convert "$TMP"/left.png "$TMP"/right.png +append \( "$TMP"/top.png -repage +0-149 \) -background none -layers merge +repage "$TMP"/temp.png   #combine faces
-    ;;
-    d)
-        magick convert "$TMP"/temp.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$TMP"/fried.jpg #delicious deep fried goodness
-        magick convert "$TMP"/fried.jpg "$TMP"/temp.png #put everything in place
-    ;;
-    l)
-        magick convert "$TMP"/temp.png -liquid-rescale 50x50%\! "$TMP"/temp.png 
-    ;;
-    i)
-        magick convert "$TMP"/temp.png -implode 0.5 "$TMP"/temp.png 
-    ;;
-    e)
-        magick convert "$TMP"/temp.png -implode -1 "$TMP"/temp.png 
-    ;;
-    s)
-        magick convert "$TMP"/temp.png -swirl 180 "$TMP"/temp.png 
-    ;;
-    n)
-        magick convert "$TMP"/temp.png -channel RGB -negate "$TMP"/temp.png 
-    ;;
-  esac
+while [ "$1" != "" ]; do # check if we have any args left
+	case "$1" in
+		--*)
+			case "${1#--}" in
+				help)
+					printhelptext
+					exit
+				;;
+				caption)
+					caption "$2" "$3"
+					if [[ $3 != -* ]]; then
+						shift
+					fi
+					shift
+				;;
+				cubify)
+					cubify
+				;;
+				deep-fry)
+					deepfry
+				;;
+				liquid-rescale)
+					lqr
+				;;
+				implode)
+					implode
+				;;
+				explode)
+					explode
+				;;
+				swirl)
+					swirl
+				;;
+				invert)
+					invert
+				;;
+				*)
+					exit
+				;;
+			esac
+		;;
+		-*)
+			sflg="${1#-}"
+			while [ "$sflg" != "" ]; do
+				case "$sflg" in
+					m)
+						caption "$2" "$3"
+						if [[ $3 != -* ]]; then
+							shift
+						fi
+						shift
+					;;
+					q)
+						cubify
+					;;
+					d)
+						deepfry
+					;;
+					l)
+						lqr
+					;;
+					i)
+						implode
+					;;
+					e)
+						explode
+					;;
+					s)
+						swirl
+					;;
+					n)
+						invert
+					;;
+					*)
+						echo "Invalid flag, panicking..."
+						exit
+					;;
+				esac
+				sflg=$(printf %s "$sflg" | cut -c2-) # looks bad but posix sh doesn't have string indexing
+			done
+		;;
+	esac
+	shift # go to next argument
 done
 
-magick convert "$TMP"/temp.png "$3" #output file
+magick convert "$TMP"/temp.png "$out" #output file
 rm -r "$TMP"   #remove temporary directory
+
