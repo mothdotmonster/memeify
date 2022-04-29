@@ -118,32 +118,32 @@ while [ "$1" != "" ]; do # check if we have any args left
 			sflg="${1#-}"
 			while [ "$sflg" != "" ]; do
 				case "$sflg" in
-					m)
+					m*)
 						caption "$2" "$3"
 						if [[ $3 != -* ]]; then
 							shift
 						fi
 						shift
 					;;
-					q)
+					q*)
 						cubify
 					;;
-					d)
+					d*)
 						deepfry
 					;;
-					l)
+					l*)
 						lqr
 					;;
-					i)
+					i*)
 						implode
 					;;
-					e)
+					e*)
 						explode
 					;;
-					s)
+					s*)
 						swirl
 					;;
-					n)
+					n*)
 						invert
 					;;
 					*)
