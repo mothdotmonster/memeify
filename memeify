@@ -1,71 +1,104 @@
 #!/bin/bash
 
-TMP=$(mktemp -d)     #make temporary directory
-
 usage(){
-	echo "usage: memeify input output [args]"
-	echo '-m / --caption "text" "text"  add caption'
-	echo '-q / --cubify                 cubify it'
-	echo '-d / --deep-fry               deep fry it'
-	echo '-l / --liquid-rescale         liquid rescale it'
-	echo '-i / --implode                implode it'
-	echo '-e / --explode                explode it'
-	echo '-s / --swirl                  swirl it'
-	echo '-n / --invert                 invert it'
+	printf "%s\n" "usage: memeify input output [args]"
+	printf "%s\n" '-m / --caption "text" "text"  add caption'
+	printf "%s\n" '-q / --cubify                 cubify it'
+	printf "%s\n" '-d / --deep-fry               deep fry it'
+	printf "%s\n" '-l / --liquid-rescale         liquid rescale it'
+	printf "%s\n" '-i / --implode                implode it'
+	printf "%s\n" '-e / --explode                explode it'
+	printf "%s\n" '-s / --swirl                  swirl it'
+	printf "%s\n" '-n / --invert                 invert it'
 	exit 1
 }
 
 caption(){
-	magick convert "$TMP"/temp.png -resize 1024x "$TMP"/temp.png   #make sure image is 1024px wide
-	if [ -n "$1" ]; then #check if top caption is actually empty
-		magick convert "$TMP"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$1" -composite "$TMP"/temp.png      #top caption
+	magick convert "$temp"/temp.png -resize 1024x "$temp"/temp.png   # make sure image is 1024px wide
+	if [ -n "$1" ]; then # check if top caption is actually empty
+		magick convert "$temp"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$1" -composite "$temp"/temp.png      # top caption
 	fi
-	if [ "$#" = 2 ]; then    #check if we're asked for a bottom caption
+	if [ "$#" = 2 ]; then    # check if we're asked for a bottom caption
 		if [[ "$2" != -* ]]; then # check if it's actually a flag
-			if [ -n "$2" ]; then #check if bottom caption is actually empty
-				magick convert "$TMP"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity south label:"$2" -composite "$TMP"/temp.png  #bottom caption
+			if [ -n "$2" ]; then # check if bottom caption is actually empty
+				magick convert "$temp"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity south label:"$2" -composite "$temp"/temp.png  # bottom caption
 			fi
 		fi
 	fi
 }
 
 cubify(){
-	magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -rotate -60 -trim   "$TMP"/top.png     #make the top face
-	magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -level 20%,100%,0.9 "$TMP"/left.png    #make the left face
-	magick convert "$TMP"/temp.png -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.8 "$TMP"/right.png   #make the right face
-	magick convert "$TMP"/left.png "$TMP"/right.png +append \( "$TMP"/top.png -repage +0-149 \) -background none -layers merge +repage "$TMP"/temp.png   #combine faces
+	magick convert "$temp"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -rotate -60 -trim   "$temp"/top.png     # make the top face
+	magick convert "$temp"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -level 20%,100%,0.9 "$temp"/left.png    # make the left face
+	magick convert "$temp"/temp.png -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.8 "$temp"/right.png   # make the right face
+	magick convert "$temp"/left.png "$temp"/right.png +append \( "$temp"/top.png -repage +0-149 \) -background none -layers merge +repage "$temp"/temp.png   # combine faces
 }
 
 deepfry(){
-	magick convert "$TMP"/temp.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$TMP"/fried.jpg #delicious deep fried goodness
-  magick convert "$TMP"/fried.jpg "$TMP"/temp.png #put everything in place
+	magick convert "$temp"/temp.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$temp"/fried.jpg #delicious deep fried goodness
+  magick convert "$temp"/fried.jpg "$temp"/temp.png # put everything in place
 }
 
 lqr(){
-	magick convert "$TMP"/temp.png -liquid-rescale 50x50%\! "$TMP"/temp.png 
+	magick convert "$temp"/temp.png -liquid-rescale 50x50%\! "$temp"/temp.png 
 }
 
 implode(){
-	magick convert "$TMP"/temp.png -implode 0.5 "$TMP"/temp.png 
+	magick convert "$temp"/temp.png -implode 0.5 "$temp"/temp.png 
 }
 
 explode(){
-	magick convert "$TMP"/temp.png -implode -1 "$TMP"/temp.png 
+	magick convert "$temp"/temp.png -implode -1 "$temp"/temp.png 
 }
 
 swirl(){
-	magick convert "$TMP"/temp.png -swirl 180 "$TMP"/temp.png
+	magick convert "$temp"/temp.png -swirl 180 "$temp"/temp.png
 }
 
 invert(){
-	magick convert "$TMP"/temp.png -channel RGB -negate "$TMP"/temp.png 
+	magick convert "$temp"/temp.png -channel RGB -negate "$temp"/temp.png 
 }
 
-if [[ ${#} -eq 0 ]]; then
-  usage
+barge(){
+	pchr="#" # positive character
+	nchr="." # negative character
+
+	tlen="$1" # total length
+	perc="$2" # percentage
+	unset pbar nbar # prevent problems if script is ran repeatedly
+
+	plen=$(( $(( perc * tlen )) / 100)) # get positive length
+	nlen=$(( tlen - plen )) # get negative length 
+
+	while [ "$plen" -ne 0 ]; do # add pchr to pbar plen times
+		pbar="$pbar""$pchr"	
+		plen=$(( "$plen" - 1 )) 
+	done
+
+	while [ "$nlen" -ne 0 ]; do # add nchr to nbar nlen times
+		nbar="$nbar""$nchr"
+		nlen=$(( "$nlen" - 1 ))
+	done
+
+	printf "%s" "$pbar" # print pbar
+	printf "%s" "$nbar" # print nbar
+}
+
+if [[ ${#} -eq 0 ]]; then # if no args present...
+  usage # ...show usage
 fi
 
-magick convert "$1" "$TMP"/temp.png #create temp file
+if [ "$1" = "--help" ]; then # if user asks nicely...
+	usage # ...show usage
+	exit
+fi
+
+trap "tput cnorm; exit" INT TERM # show cursor when script exits
+tput civis # hide cursor during script execution
+
+temp=$(mktemp -d)     # make temporary directory
+magick convert "$1" "$temp"/temp.png # create temp file
+
 out="$1"
 shift
 if [[ $1 != -* ]]; then # check if they asked for an output file or if they went straight to args
@@ -77,39 +110,38 @@ while [ "$1" != "" ]; do # check if we have any args left
 	case "$1" in
 		--*)
 			case "${1#--}" in
-				help)
-					printhelptext
-					exit
-				;;
 				caption)
-					caption "$2" "$3"
 					if [[ $3 != -* ]]; then
+						cstr="$cstr;caption '$2' '$3'"
 						shift
+					else
+						cstr="$cstr;caption '$2'"
 					fi
 					shift
 				;;
 				cubify)
-					cubify
+					cstr="$cstr;cubify"
 				;;
 				deep-fry)
-					deepfry
+					cstr="$cstr;deepfry"
 				;;
 				liquid-rescale)
-					lqr
+					cstr="$cstr;lqr"
 				;;
 				implode)
-					implode
+					cstr="$cstr;implode"
 				;;
 				explode)
-					explode
+					cstr="$cstr;explode"
 				;;
 				swirl)
-					swirl
+					cstr="$cstr;swirl"
 				;;
 				invert)
-					invert
+					cstr="$cstr;invert"
 				;;
 				*)
+					printf "%s\n" "Invalid flag, panicking..."
 					exit
 				;;
 			esac
@@ -119,45 +151,64 @@ while [ "$1" != "" ]; do # check if we have any args left
 			while [ "$sflg" != "" ]; do
 				case "$sflg" in
 					m*)
-						caption "$2" "$3"
 						if [[ $3 != -* ]]; then
+							cstr="$cstr;caption '$2' '$3'"
 							shift
+						else
+							cstr="$cstr;caption '$2'"
 						fi
 						shift
 					;;
 					q*)
-						cubify
+						cstr="$cstr;cubify"
 					;;
 					d*)
-						deepfry
+						cstr="$cstr;deepfry"
 					;;
 					l*)
-						lqr
+						cstr="$cstr;lqr"
 					;;
 					i*)
-						implode
+						cstr="$cstr;implode"
 					;;
 					e*)
-						explode
+						cstr="$cstr;explode"
 					;;
 					s*)
-						swirl
+						cstr="$cstr;swirl"
 					;;
 					n*)
-						invert
+						cstr="$cstr;invert"
 					;;
 					*)
-						echo "Invalid flag, panicking..."
+						printf "%s\n" "Invalid flag, panicking..."
 						exit
 					;;
 				esac
-				sflg=$(printf %s "$sflg" | cut -c2-) # looks bad but posix sh doesn't have string indexing
+				sflg=${sflg:1} # cringe bashism
 			done
 		;;
 	esac
 	shift # go to next argument
 done
 
-magick convert "$TMP"/temp.png "$out" #output file
-rm -r "$TMP"   #remove temporary directory
+cstr="${cstr#;};" # sorry
+clen="${cstr//[^;]}"
 
+printf "%s\n" "Memeifying..."
+
+printf "[" # progress bar setup
+while [ "$cstr" != "" ]; do
+	cpos=$(( cpos + 1))
+	pcnt=$(( $(( cpos * 100 )) / ${#clen} )) # turn that into percentage
+	barge 20 "$pcnt" # display bar
+	printf "] %s%%\r[" "$pcnt" #display percentage and errata
+	eval "${cstr%%;*}"
+	cstr=${cstr#*;*}
+done
+
+printf "\n%s\n" "Memeification complete!"
+
+magick convert "$temp"/temp.png "$out" #output file
+rm -r "$temp"   #remove temporary directory
+tput cnorm # give cursor back
