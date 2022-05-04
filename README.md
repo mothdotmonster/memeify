@@ -13,3 +13,4 @@ memey scripts for imagemagick
     -e / --explode                explode it
     -s / --swirl                  swirl it
     -n / --invert                 invert it
+    -r / --rotational-blur        spin it

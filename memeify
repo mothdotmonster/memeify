@@ -10,53 +10,58 @@ usage(){
 	printf "%s\n" '-e / --explode                explode it'
 	printf "%s\n" '-s / --swirl                  swirl it'
 	printf "%s\n" '-n / --invert                 invert it'
+	printf "%s\n" '-r / --rotational-blur        spin it'
 	exit 1
 }
 
 caption(){
-	magick convert "$temp"/temp.png -resize 1024x "$temp"/temp.png   # make sure image is 1024px wide
+	magick "$temp"/temp.png -resize 1024x "$temp"/temp.png   # make sure image is 1024px wide
 	if [ -n "$1" ]; then # check if top caption is actually empty
-		magick convert "$temp"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$1" -composite "$temp"/temp.png      # top caption
+		magick "$temp"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity north label:"$1" -composite "$temp"/temp.png      # top caption
 	fi
 	if [ "$#" = 2 ]; then    # check if we're asked for a bottom caption
-		if [[ "$2" != -* ]]; then # check if it's actually a flag
+		if [[ "$2" != -* ]]; then # check if it's actually a flag, just in case :)
 			if [ -n "$2" ]; then # check if bottom caption is actually empty
-				magick convert "$temp"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity south label:"$2" -composite "$temp"/temp.png  # bottom caption
+				magick "$temp"/temp.png -size 1024x256 -alpha set -background none -font Impact -stroke black -fill white -strokewidth 2 -gravity south label:"$2" -composite "$temp"/temp.png  # bottom caption
 			fi
 		fi
 	fi
 }
 
 cubify(){
-	magick convert "$temp"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -rotate -60 -trim   "$temp"/top.png     # make the top face
-	magick convert "$temp"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -level 20%,100%,0.9 "$temp"/left.png    # make the left face
-	magick convert "$temp"/temp.png -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.8 "$temp"/right.png   # make the right face
-	magick convert "$temp"/left.png "$temp"/right.png +append \( "$temp"/top.png -repage +0-149 \) -background none -layers merge +repage "$temp"/temp.png   # combine faces
+	magick "$temp"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -rotate -60 -trim   "$temp"/top.png     # make the top face
+	magick "$temp"/temp.png -resize 260x301! -alpha set -background none -shear 0x30  -level 20%,100%,0.9 "$temp"/left.png    # make the left face
+	magick "$temp"/temp.png -resize 260x301! -alpha set -background none -shear 0x-30 -level 30%,100%,0.8 "$temp"/right.png   # make the right face
+	magick "$temp"/left.png "$temp"/right.png +append \( "$temp"/top.png -repage +0-149 \) -background none -layers merge +repage "$temp"/temp.png   # combine faces
 }
 
 deepfry(){
-	magick convert "$temp"/temp.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$temp"/fried.jpg #delicious deep fried goodness
-  magick convert "$temp"/fried.jpg "$temp"/temp.png # put everything in place
+	magick "$temp"/temp.png -quality 5 -modulate 100,200 -resize 256x -sharpen 10 +noise uniform "$temp"/fried.jpg #delicious deep fried goodness
+  magick "$temp"/fried.jpg "$temp"/temp.png # put everything in place
 }
 
 lqr(){
-	magick convert "$temp"/temp.png -liquid-rescale 50x50%\! "$temp"/temp.png 
+	magick "$temp"/temp.png -liquid-rescale 50x50%\! "$temp"/temp.png 
 }
 
 implode(){
-	magick convert "$temp"/temp.png -implode 0.5 "$temp"/temp.png 
+	magick "$temp"/temp.png -implode 0.5 "$temp"/temp.png 
 }
 
 explode(){
-	magick convert "$temp"/temp.png -implode -1 "$temp"/temp.png 
+	magick "$temp"/temp.png -implode -1 "$temp"/temp.png 
 }
 
 swirl(){
-	magick convert "$temp"/temp.png -swirl 180 "$temp"/temp.png
+	magick "$temp"/temp.png -swirl 180 "$temp"/temp.png
 }
 
 invert(){
-	magick convert "$temp"/temp.png -channel RGB -negate "$temp"/temp.png 
+	magick "$temp"/temp.png -channel RGB -negate "$temp"/temp.png 
+}
+
+rblur(){
+	magick "$temp"/temp.png -rotational-blur 10 "$temp"/temp.png
 }
 
 barge(){
@@ -90,14 +95,18 @@ fi
 
 if [ "$1" = "--help" ]; then # if user asks nicely...
 	usage # ...show usage
-	exit
+fi
+
+if [[ "$1" = -* ]]; then
+	echo "Missing filename, panicking..."
+	exit 1
 fi
 
 trap "tput cnorm; exit" INT TERM # show cursor when script exits
 tput civis # hide cursor during script execution
 
 temp=$(mktemp -d)     # make temporary directory
-magick convert "$1" "$temp"/temp.png # create temp file
+magick "$1" "$temp"/temp.png # create temp file
 
 out="$1"
 shift
@@ -140,9 +149,12 @@ while [ "$1" != "" ]; do # check if we have any args left
 				invert)
 					cstr="$cstr;invert"
 				;;
+				rotational-blur)
+					cstr="$cstr;rblur"
+				;;
 				*)
 					printf "%s\n" "Invalid flag, panicking..."
-					exit
+					exit 1
 				;;
 			esac
 		;;
@@ -180,9 +192,12 @@ while [ "$1" != "" ]; do # check if we have any args left
 					n*)
 						cstr="$cstr;invert"
 					;;
+					r*)
+						cstr="$cstr;rblur"
+					;;
 					*)
 						printf "%s\n" "Invalid flag, panicking..."
-						exit
+						exit 1
 					;;
 				esac
 				sflg=${sflg:1} # cringe bashism
@@ -193,22 +208,27 @@ while [ "$1" != "" ]; do # check if we have any args left
 done
 
 cstr="${cstr#;};" # sorry
-clen="${cstr//[^;]}"
+clen="${cstr//[^;]}" # remove everything that isn't a semicolon
+clen="${#clen}" # count them
 
 printf "%s\n" "Memeifying..."
 
 printf "[" # progress bar setup
+barge 20 0
+printf "] %s%%\r[" "0"
+
 while [ "$cstr" != "" ]; do
-	cpos=$(( cpos + 1))
-	pcnt=$(( $(( cpos * 100 )) / ${#clen} )) # turn that into percentage
+	pcnt=$(( $(( cpos * 100 )) / clen )) # turn that into percentage
 	barge 20 "$pcnt" # display bar
 	printf "] %s%%\r[" "$pcnt" #display percentage and errata
-	eval "${cstr%%;*}"
-	cstr=${cstr#*;*}
+	eval "${cstr%%;*}" # run next command
+	cpos=$(( cpos + 1)) # update bar position for later
+	cstr=${cstr#*;*} # remove the command we just ran
 done
 
-printf "\n%s\n" "Memeification complete!"
+barge 20 100 # generate final bar
+printf "] %s\n%s\n" "100%" "Memeification complete!" # finish everything off
 
-magick convert "$temp"/temp.png "$out" #output file
+magick "$temp"/temp.png "$out" #output file
 rm -r "$temp"   #remove temporary directory
 tput cnorm # give cursor back
