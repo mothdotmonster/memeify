@@ -2,7 +2,7 @@
 
 ![demo image](demo.png)
 
-memey scripts for imagemagick
+meme making bash/imagemagick script
 
     usage: memeify input output [args]
     -m / --caption "text" "text"  add caption
