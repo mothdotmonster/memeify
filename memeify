@@ -11,6 +11,7 @@ usage(){
 	printf "%s\n" '-s / --swirl                  swirl it'
 	printf "%s\n" '-n / --invert                 invert it'
 	printf "%s\n" '-r / --rotational-blur        spin it'
+	tput cnorm
 	exit 1
 }
 
@@ -99,10 +100,11 @@ fi
 
 if [[ "$1" = -* ]]; then
 	echo "Missing filename, panicking..."
+	tput cnorm
 	exit 1
 fi
 
-trap "tput cnorm; exit" INT TERM # show cursor when script exits
+trap "tput cnorm; exit" INT TERM # show cursor when script is killed
 tput civis # hide cursor during script execution
 
 temp=$(mktemp -d)     # make temporary directory
@@ -154,6 +156,7 @@ while [ "$1" != "" ]; do # check if we have any args left
 				;;
 				*)
 					printf "%s\n" "Invalid flag, panicking..."
+					tput cnorm
 					exit 1
 				;;
 			esac
@@ -197,6 +200,7 @@ while [ "$1" != "" ]; do # check if we have any args left
 					;;
 					*)
 						printf "%s\n" "Invalid flag, panicking..."
+						tput cnorm
 						exit 1
 					;;
 				esac
