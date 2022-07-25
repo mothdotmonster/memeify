@@ -123,36 +123,36 @@ while [ "$1" != "" ]; do # check if we have any args left
 			case "${1#--}" in
 				caption)
 					if [[ $3 != -* ]]; then
-						cstr="$cstr;caption '$2' '$3'"
+						cstr="$cstr🯅caption \"$2\" \"$3\""
 						shift
 					else
-						cstr="$cstr;caption '$2'"
+						cstr="$cstr🯅caption \"$2\""
 					fi
 					shift
 				;;
 				cubify)
-					cstr="$cstr;cubify"
+					cstr="$cstr🯅cubify"
 				;;
 				deep-fry)
-					cstr="$cstr;deepfry"
+					cstr="$cstr🯅deepfry"
 				;;
 				liquid-rescale)
-					cstr="$cstr;lqr"
+					cstr="$cstr🯅lqr"
 				;;
 				implode)
-					cstr="$cstr;implode"
+					cstr="$cstr🯅implode"
 				;;
 				explode)
-					cstr="$cstr;explode"
+					cstr="$cstr🯅explode"
 				;;
 				swirl)
-					cstr="$cstr;swirl"
+					cstr="$cstr🯅swirl"
 				;;
 				invert)
-					cstr="$cstr;invert"
+					cstr="$cstr🯅invert"
 				;;
 				rotational-blur)
-					cstr="$cstr;rblur"
+					cstr="$cstr🯅rblur"
 				;;
 				*)
 					printf "%s\n" "Invalid flag, panicking..."
@@ -167,36 +167,36 @@ while [ "$1" != "" ]; do # check if we have any args left
 				case "$sflg" in
 					m*)
 						if [[ $3 != -* ]]; then
-							cstr="$cstr;caption '$2' '$3'"
+							cstr="$cstr🯅caption \"$2\" \"$3\""
 							shift
 						else
-							cstr="$cstr;caption '$2'"
+							cstr="$cstr🯅caption \"$2\""
 						fi
 						shift
 					;;
 					q*)
-						cstr="$cstr;cubify"
+						cstr="$cstr🯅cubify"
 					;;
 					d*)
-						cstr="$cstr;deepfry"
+						cstr="$cstr🯅deepfry"
 					;;
 					l*)
-						cstr="$cstr;lqr"
+						cstr="$cstr🯅lqr"
 					;;
 					i*)
-						cstr="$cstr;implode"
+						cstr="$cstr🯅implode"
 					;;
 					e*)
-						cstr="$cstr;explode"
+						cstr="$cstr🯅explode"
 					;;
 					s*)
-						cstr="$cstr;swirl"
+						cstr="$cstr🯅swirl"
 					;;
 					n*)
-						cstr="$cstr;invert"
+						cstr="$cstr🯅invert"
 					;;
 					r*)
-						cstr="$cstr;rblur"
+						cstr="$cstr🯅rblur"
 					;;
 					*)
 						printf "%s\n" "Invalid flag, panicking..."
@@ -211,9 +211,9 @@ while [ "$1" != "" ]; do # check if we have any args left
 	shift # go to next argument
 done
 
-cstr="${cstr#;};" # sorry
-clen="${cstr//[^;]}" # remove everything that isn't a semicolon
-clen="${#clen}" # count them
+cstr="${cstr#🯅}🯅" # sorry
+clen="${cstr//[^🯅]}" # remove everything that isn't a stickman
+clen="${#clen}" # count the boys
 
 printf "%s\n" "Memeifying..."
 
@@ -225,9 +225,9 @@ while [ "$cstr" != "" ]; do
 	pcnt=$(( $(( cpos * 100 )) / clen )) # turn that into percentage
 	barge 20 "$pcnt" # display bar
 	printf "] %s%%\r[" "$pcnt" #display percentage and errata
-	eval "${cstr%%;*}" # run next command
+	eval "${cstr%%🯅*}" # run next command
 	cpos=$(( cpos + 1)) # update bar position for later
-	cstr=${cstr#*;*} # remove the command we just ran
+	cstr=${cstr#*🯅*} # remove the command we just ran
 done
 
 barge 20 100 # generate final bar
