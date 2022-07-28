@@ -8,7 +8,7 @@ import os
 import PySimpleGUI as sg
 import numpy as np
 
-version = "memeify 0.2.0"
+version = "memeify 0.2.1"
 
 sg.theme('DarkAmber') # i like it
 
@@ -90,6 +90,11 @@ def swirl(image):
     img.swirl(degree=180)
     return img.make_blob()
 
+def rotational_blur(image):
+  with Image(blob=image) as img:
+    img.rotational_blur(angle=10)
+    return img.make_blob()
+
 def meme_window(): # main meme-making window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
@@ -144,6 +149,8 @@ def main():
         meme = swirl(meme)
       if values["filter"] == "deep fry":
         meme = deep_fry(meme)
+      if values["filter"] == "rotational blur":
+        meme = rotational_blur(meme)
 
       with Image(blob=meme) as img:
         img.transform(resize='500x500>')
@@ -165,6 +172,8 @@ def main():
         meme = swirl(meme)
       if values["filter"] == "deep fry":
         meme = deep_fry(meme)
+      if values["filter"] == "rotational blur":
+        meme = rotational_blur(meme)
 
       with Image(blob=meme) as img:
         outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
