@@ -8,33 +8,30 @@ import os
 import PySimpleGUI as sg
 from gi.repository import GLib
 
-version = "memeify 0.0.2"
+version = "memeify 0.0.3"
 
 def word_wrap(image, draw, text, roi_width, roi_height):
-    """Break long text to multiple lines, and reduce point size
-    until all text fits within a bounding box."""
-    mutable_message = text
-    iteration_attempts = 100
+  # Reduce point size until all text fits within a bounding box.
+  mutable_message = text
+  iteration_attempts = 100
 
-    def eval_metrics(txt):
-        """Quick helper function to calculate width/height of text."""
-        metrics = draw.get_font_metrics(image, txt, True)
-        return (metrics.text_width, metrics.text_height)
+  def eval_metrics(txt):
+    # Quick helper function to calculate width/height of text.
+    metrics = draw.get_font_metrics(image, txt, True)
+    return (metrics.text_width, metrics.text_height)
 
-    while draw.font_size > 0 and iteration_attempts:
-        iteration_attempts -= 1
-        width, height = eval_metrics(mutable_message)
-        if height > roi_height:
-            draw.font_size -= 2  # Reduce pointsize
-            mutable_message = text  # Restore original text
-        elif width > roi_width:
-                draw.font_size -= 2  # Reduce pointsize
-                mutable_message = text  # Restore original text
-        else:
-            break
-    if iteration_attempts < 1:
-        raise RuntimeError("Unable to calculate word_wrap for " + text)
-    return mutable_message
+  while draw.font_size > 0 and iteration_attempts:
+    iteration_attempts -= 1
+    width, height = eval_metrics(mutable_message)
+    if height > roi_height:
+      draw.font_size -= 2  # Reduce pointsize
+    elif width > roi_width:
+      draw.font_size -= 2  # Reduce pointsize
+    else:
+      break
+  if iteration_attempts < 1:
+    raise RuntimeError("Unable to calculate word_wrap for " + text)
+  return mutable_message
 
 def caption(top_text, bottom_text):
   draw.stroke_color = "black"
@@ -43,12 +40,12 @@ def caption(top_text, bottom_text):
   draw.font_family = 'Impact'
   draw.font_size = 200
   draw.text_alignment = "center"
-  if type(top_text) == str:
+  if len(top_text) > 0:
     mutable_message = word_wrap(img, draw, top_text, int(img.width), 200)
     draw.text(int(img.width/2), int(draw.font_size), mutable_message)
     draw.draw(img)
   draw.font_size = 200
-  if type(bottom_text) == str:
+  if len(bottom_text) > 0:
     mutable_message = word_wrap(img, draw, bottom_text, int(img.width), 200)
     draw.text(int(img.width/2), int(img.height)-20, mutable_message)
     draw.draw(img)
@@ -59,7 +56,7 @@ infile = "example.png"
 
 layout = [
   [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-  [sg.T("")],[sg.Text("", expand_x=True,), sg.Text("choose a picture: "), sg.FileBrowse(key="-FILE-", enable_events=True), sg.Button("load image"), sg.Text("", expand_x=True,)],
+  [sg.T("")],[sg.Text("", expand_x=True,), sg.Text("choose a picture: "), sg.FileBrowse(key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
   [sg.InputText("TOP TEXT", key="top_text", expand_x=True)],
   [sg.InputText("BOTTOM TEXT", key="bottom_text", expand_x=True)],
   [sg.Button("memeify!", expand_x=True)]]
