@@ -14,3 +14,5 @@ meme making bash/imagemagick script
     -s / --swirl                  swirl it
     -n / --invert                 invert it
     -r / --rotational-blur        spin it
+
+also included is a python GUI version, which has less features but can handle special characters.
