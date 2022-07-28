@@ -6,9 +6,8 @@ from wand.color import Color
 from datetime import datetime
 import os
 import PySimpleGUI as sg
-from gi.repository import GLib
 
-version = "memeify 0.0.3"
+version = "memeify 0.1.0"
 
 def word_wrap(image, draw, text, roi_width, roi_height):
   # Reduce point size until all text fits within a bounding box.
@@ -33,64 +32,97 @@ def word_wrap(image, draw, text, roi_width, roi_height):
     raise RuntimeError("Unable to calculate word_wrap for " + text)
   return mutable_message
 
-def caption(top_text, bottom_text):
-  draw.stroke_color = "black"
-  draw.stroke_width = 3
-  draw.fill_color = Color('white')
-  draw.font_family = 'Impact'
-  draw.font_size = 200
-  draw.text_alignment = "center"
-  if len(top_text) > 0:
-    mutable_message = word_wrap(img, draw, top_text, int(img.width), 200)
-    draw.text(int(img.width/2), int(draw.font_size), mutable_message)
-    draw.draw(img)
-  draw.font_size = 200
-  if len(bottom_text) > 0:
-    mutable_message = word_wrap(img, draw, bottom_text, int(img.width), 200)
-    draw.text(int(img.width/2), int(img.height)-20, mutable_message)
-    draw.draw(img)
-
 sg.theme('DarkAmber')
 
-infile = "example.png"
+def meme_window(): # main meme-making window
+  layout = [
+    [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
+    [sg.T("")],[sg.Text("", expand_x=True,), sg.Text("choose a picture: "), sg.FileBrowse(key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
+    [sg.InputText("TOP TEXT", key="top_text", expand_x=True)],
+    [sg.InputText("BOTTOM TEXT", key="bottom_text", expand_x=True)],
+    [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
+  return sg.Window(version, layout, size=(600,700), finalize=True)
 
-layout = [
-  [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-  [sg.T("")],[sg.Text("", expand_x=True,), sg.Text("choose a picture: "), sg.FileBrowse(key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
-  [sg.InputText("TOP TEXT", key="top_text", expand_x=True)],
-  [sg.InputText("BOTTOM TEXT", key="bottom_text", expand_x=True)],
-  [sg.Button("memeify!", expand_x=True)]]
-window = sg.Window(version , layout, size=(600,700))
+def ouroborous_window(): # special version without file selector as to stop users from ruining things
+  layout = [
+    [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
+    [sg.InputText("TOP TEXT", key="top_text", expand_x=True)],
+    [sg.InputText("BOTTOM TEXT", key="bottom_text", expand_x=True)],
+    [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
+  return sg.Window(version, layout, size=(600,700), finalize=True)
 
-while True:
-  event, values = window.read()
-  if event == sg.WIN_CLOSED or event=="Exit":
-    break
-  if event == "load image":
-    if os.path.exists(values["-FILE-"]):
-      with Image(filename=values["-FILE-"]) as img:
-        img.transform(resize='500x500>')
-        thumb = img.make_blob()
-        window["-IMAGE-"].update(thumb)
-  elif event == "memeify!":
-    with Image(filename=values["-FILE-"]) as img:
-      with Drawing() as draw:
-        caption(values["top_text"], values["bottom_text"])
-        outname = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) + "/memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
-        img.save(filename=outname)
-        window.close()
+def export_window(): # output window
+  layout = [
+    [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
+    [sg.Text(key="fintext", expand_x=True, justification="center")]]
+  return sg.Window("memeification complete!", layout, size=(600,600), finalize=True)
 
-fintext = "Image saved to: " + outname
-with Image(filename=outname) as img:
-  img.transform(resize='500x500>')
-  finthumb = img.make_blob()
-layout=[[sg.Image(data=finthumb, expand_x=True, expand_y=True)],
-  [sg.Text(fintext, expand_x=True, justification="center")]]
-window = sg.Window("memeification complete!", layout, size=(600,600))
+def main():
+  window = meme_window() # open starting window
+  while True: # main event loop
+    window, event, values = sg.read_all_windows()
+    if event == sg.WIN_CLOSED or event == 'Exit':
+      break
+    elif event == "load image":
+      infile = values["-FILE-"]
+      if os.path.exists(infile):
+        with Image(filename=infile) as img:
+          meme = img.make_blob()
+          img.transform(resize='500x500>')
+          thumb = img.make_blob()
+          window["-IMAGE-"].update(thumb)
+    elif event == "memeify!":
+      with Image(blob=meme) as img:
+        with Drawing() as draw:
+          draw.stroke_color = "black"
+          draw.stroke_width = 3
+          draw.fill_color = Color('white')
+          draw.font_family = 'Impact'
+          draw.font_size = 200
+          draw.text_alignment = "center"
+          if len(values["top_text"]) > 0:
+            mutable_message = word_wrap(img, draw, values["top_text"], int(img.width), 200)
+            draw.text(int(img.width/2), int(draw.font_size), mutable_message)
+            draw.draw(img)
+          draw.font_size = 200
+          if len(values["bottom_text"]) > 0:
+            mutable_message = word_wrap(img, draw, values["bottom_text"], int(img.width), 200)
+            draw.text(int(img.width/2), int(img.height)-20, mutable_message)
+            draw.draw(img)
+          meme = img.make_blob()
+          img.transform(resize='500x500>')
+          thumb = img.make_blob()
+          window.close()
+          window = ouroborous_window() # and so the meme eats its own tail
+          window["-IMAGE-"].update(thumb)
+    elif event == "export!":
+      with Image(blob=meme) as img:
+        with Drawing() as draw:
+          draw.stroke_color = "black"
+          draw.stroke_width = 3
+          draw.fill_color = Color('white')
+          draw.font_family = 'Impact'
+          draw.font_size = 200
+          draw.text_alignment = "center"
+          if len(values["top_text"]) > 0:
+            mutable_message = word_wrap(img, draw, values["top_text"], int(img.width), 200)
+            draw.text(int(img.width/2), int(draw.font_size), mutable_message)
+            draw.draw(img)
+          draw.font_size = 200
+          if len(values["bottom_text"]) > 0:
+            mutable_message = word_wrap(img, draw, values["bottom_text"], int(img.width), 200)
+            draw.text(int(img.width/2), int(img.height)-20, mutable_message)
+            draw.draw(img)
+          outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+          fintext = "Image saved as: " + outname
+          img.save(filename=outname)
+          img.transform(resize='500x500>')
+          finthumb = img.make_blob()
+          window.close()
+          window = export_window()
+          window["-IMAGE-"].update(finthumb)
+          window["fintext"].update(fintext)
+  window.close()
 
-while True:
-  event, values = window.read()
-  if event == sg.WIN_CLOSED or event=="Exit":
-    break
-
-window.close()
+if __name__ == '__main__':
+    main()
