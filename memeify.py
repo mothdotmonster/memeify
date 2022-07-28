@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 
-from textwrap import wrap
-from tokenize import String
 from wand.image import Image
 from wand.drawing import Drawing
 from wand.color import Color
-import argparse, sys, getopt, math, os
+from PIL import Image as pillow
+from datetime import datetime
+import os, io
+import PySimpleGUI as sg
+from gi.repository import GLib
 
-version = "0.0.1"
-
-def usage():
-  print("memeify version",version,"\nUSAGE:","\n-t / --top-text [text] - add top text""\n-b / --bottom-text [text] - add bottom text")
+version = "memeify 0.0.1"
 
 def word_wrap(image, draw, text, roi_width, roi_height):
     """Break long text to multiple lines, and reduce point size
@@ -55,40 +54,49 @@ def caption(top_text, bottom_text):
     draw.text(int(img.width/2), int(img.height)-20, mutable_message)
     draw.draw(img)
 
-argv = sys.argv[3:]
+sg.theme('DarkAmber')
 
-if len(sys.argv) == 1 or sys.argv[1] == "-h" or sys.argv[1] == "--help":
-  usage()
-  sys.exit(0)
+infile = "example.png"
 
+layout = [
+  [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
+  [sg.T("")],[sg.Text("", expand_x=True,), sg.Text("choose a picture: "), sg.FileBrowse(key="-FILE-", enable_events=True), sg.Button("load image"), sg.Text("", expand_x=True,)],
+  [sg.InputText("TOP TEXT", key="top_text", expand_x=True)],
+  [sg.InputText("BOTTOM TEXT", key="bottom_text", expand_x=True)],
+  [sg.Button("memeify!", expand_x=True)]]
+window = sg.Window(version , layout, size=(600,700))
 
-if os.path.isfile(sys.argv[1]) == False:
-  print("Error: Invalid input file!")
-  sys.exit(1)
-if sys.argv[2].endswith(".png") == False:
-  print("Error: Invalid output filename, must end with .png!")
-  sys.exit(1)
+while True:
+  event, values = window.read()
+  if event == sg.WIN_CLOSED or event=="Exit":
+    break
+  if event == "load image":
+    if os.path.exists(values["-FILE-"]):
+      image = pillow.open(values["-FILE-"])
+      image.thumbnail((500, 500))
+      bio = io.BytesIO()
+      image.save(bio, format="PNG")
+      window["-IMAGE-"].update(data=bio.getvalue())
+  elif event == "memeify!":
+    with Image(filename=values["-FILE-"]) as img:
+      with Drawing() as draw:
+        caption(values["top_text"], values["bottom_text"])
+        outname = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) + "/memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+        img.save(filename=outname)
+        window.close()
 
-try:
-  opts, args = getopt.getopt(argv, "t:b:", ["debug","top-text=","bottom-text="])
-except getopt.GetoptError as err:
-  # print help information and exit:
-  print(err)  # will print something like "option -a not recognized"
-  usage()
-  sys.exit(2)
+fintext = "Image saved to: " + outname
+image = pillow.open(outname)
+image.thumbnail((500, 500))
+bio = io.BytesIO()
+image.save(bio, format="PNG")
+layout=[[sg.Image(data=bio.getvalue(), expand_x=True, expand_y=True)],
+  [sg.Text(fintext, expand_x=True, justification="center")]]
+window = sg.Window("memeification complete!", layout, size=(600,600))
 
-output = None
+while True:
+  event, values = window.read()
+  if event == sg.WIN_CLOSED or event=="Exit":
+    break
 
-with Image(filename=sys.argv[1]) as img:
-  with Drawing() as draw:
-    for o, a in opts:
-      if o in ("--debug"):
-        debug = True
-      elif o in ("-t", "--top-text"):
-        caption(a, None)
-      elif o in ("-b", "--bottom-text"):
-        caption(None, a)
-      else:
-        assert False, "unhandled option"
-    
-    img.save(filename=sys.argv[2])
+window.close()
