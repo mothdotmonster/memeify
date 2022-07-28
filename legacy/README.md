@@ -1,0 +1,1 @@
+this is an old version of the script written in bash. it is worse
