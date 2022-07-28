@@ -6,8 +6,11 @@ from wand.color import Color
 from datetime import datetime
 import os
 import PySimpleGUI as sg
+import numpy as np
 
-version = "memeify 0.1.0"
+version = "memeify 0.2.0"
+
+sg.theme('DarkAmber') # i like it
 
 def word_wrap(image, draw, text, roi_width, roi_height):
   # Reduce point size until all text fits within a bounding box.
@@ -32,22 +35,77 @@ def word_wrap(image, draw, text, roi_width, roi_height):
     raise RuntimeError("Unable to calculate word_wrap for " + text)
   return mutable_message
 
-sg.theme('DarkAmber')
+def caption(image, top_text, bottom_text): # given an image (as a blob), caption it
+  with Image(blob=image) as img:
+    with Drawing() as draw:
+      draw.stroke_color = "black"
+      draw.stroke_width = 3
+      draw.fill_color = Color('white')
+      draw.font_family = 'Impact'
+      draw.font_size = 200
+      draw.text_alignment = "center"
+      if len(top_text) > 0:
+        mutable_message = word_wrap(img, draw, top_text, int(img.width), 200)
+        draw.text(int(img.width/2), int(draw.font_size), mutable_message)
+        draw.draw(img)
+      draw.font_size = 200
+      if len(bottom_text) > 0:
+        mutable_message = word_wrap(img, draw, bottom_text, int(img.width), 200)
+        draw.text(int(img.width/2), int(img.height)-20, mutable_message)
+        draw.draw(img)
+      return img.make_blob()
+
+def deep_fry(image):
+  with Image(blob=image) as img:
+    img.transform(resize='200x200>')
+    img.posterize(levels=4)
+    img.format = "jpg"
+    img.format = "png"
+    return img.make_blob()
+
+def liquid_rescale(image):
+  with Image(blob=image) as img:
+    img.liquid_rescale(height=int(img.height/2), width=int(img.width/2))
+    return img.make_blob()
+
+def implode(image):
+  with Image(blob=image) as img:
+    img.implode(amount=0.5)
+    return img.make_blob()
+
+def explode(image):
+  with Image(blob=image) as img:
+    img.implode(amount=-1)
+    return img.make_blob()
+
+def invert(image): # obscenely complicated image inverting
+  with Image(blob=image) as img:
+    array = np.array(img) # convert image into array
+    with Image.from_array(np.invert(array), channel_map="rgb") as img: # invert array and turn it back into an image
+      img.format = 'png' # make sure it's a png so nothing else breaks
+      return img.make_blob()
+
+def swirl(image):
+  with Image(blob=image) as img:
+    img.swirl(degree=180)
+    return img.make_blob()
 
 def meme_window(): # main meme-making window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.T("")],[sg.Text("", expand_x=True,), sg.Text("choose a picture: "), sg.FileBrowse(key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
-    [sg.InputText("TOP TEXT", key="top_text", expand_x=True)],
-    [sg.InputText("BOTTOM TEXT", key="bottom_text", expand_x=True)],
+    [sg.Text("filter:"), sg.DropDown(['deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur'], key = "filter", expand_x=True)],
+    [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
+    [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
   return sg.Window(version, layout, size=(600,700), finalize=True)
 
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-    [sg.InputText("TOP TEXT", key="top_text", expand_x=True)],
-    [sg.InputText("BOTTOM TEXT", key="bottom_text", expand_x=True)],
+    [sg.Text("filter:"), sg.DropDown(['deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur'], key = "filter", expand_x=True)],
+    [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
+    [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
   return sg.Window(version, layout, size=(600,700), finalize=True)
 
@@ -67,61 +125,57 @@ def main():
       infile = values["-FILE-"]
       if os.path.exists(infile):
         with Image(filename=infile) as img:
+          img.format = 'png'
           meme = img.make_blob()
           img.transform(resize='500x500>')
           thumb = img.make_blob()
           window["-IMAGE-"].update(thumb)
     elif event == "memeify!":
+      meme = caption(meme, values["top_text"], values["bottom_text"])
+      if values["filter"] == "liquid rescale":
+        meme = liquid_rescale(meme)
+      if values["filter"] == "implode":
+        meme = implode(meme)
+      if values["filter"] == "explode":
+        meme = explode(meme)
+      if values["filter"] == "invert":
+        meme = invert(meme)
+      if values["filter"] == "swirl":
+        meme = swirl(meme)
+      if values["filter"] == "deep fry":
+        meme = deep_fry(meme)
+
       with Image(blob=meme) as img:
-        with Drawing() as draw:
-          draw.stroke_color = "black"
-          draw.stroke_width = 3
-          draw.fill_color = Color('white')
-          draw.font_family = 'Impact'
-          draw.font_size = 200
-          draw.text_alignment = "center"
-          if len(values["top_text"]) > 0:
-            mutable_message = word_wrap(img, draw, values["top_text"], int(img.width), 200)
-            draw.text(int(img.width/2), int(draw.font_size), mutable_message)
-            draw.draw(img)
-          draw.font_size = 200
-          if len(values["bottom_text"]) > 0:
-            mutable_message = word_wrap(img, draw, values["bottom_text"], int(img.width), 200)
-            draw.text(int(img.width/2), int(img.height)-20, mutable_message)
-            draw.draw(img)
-          meme = img.make_blob()
-          img.transform(resize='500x500>')
-          thumb = img.make_blob()
-          window.close()
-          window = ouroborous_window() # and so the meme eats its own tail
-          window["-IMAGE-"].update(thumb)
+        img.transform(resize='500x500>')
+        thumb = img.make_blob()
+        window.close()
+        window = ouroborous_window() # and so the meme eats its own tail
+        window["-IMAGE-"].update(thumb)
     elif event == "export!":
+      meme = caption(meme, values["top_text"], values["bottom_text"])
+      if values["filter"] == "liquid rescale":
+        meme = liquid_rescale(meme)
+      if values["filter"] == "implode":
+        meme = implode(meme)
+      if values["filter"] == "explode":
+        meme = explode(meme)
+      if values["filter"] == "invert":
+        meme = invert(meme)
+      if values["filter"] == "swirl":
+        meme = swirl(meme)
+      if values["filter"] == "deep fry":
+        meme = deep_fry(meme)
+
       with Image(blob=meme) as img:
-        with Drawing() as draw:
-          draw.stroke_color = "black"
-          draw.stroke_width = 3
-          draw.fill_color = Color('white')
-          draw.font_family = 'Impact'
-          draw.font_size = 200
-          draw.text_alignment = "center"
-          if len(values["top_text"]) > 0:
-            mutable_message = word_wrap(img, draw, values["top_text"], int(img.width), 200)
-            draw.text(int(img.width/2), int(draw.font_size), mutable_message)
-            draw.draw(img)
-          draw.font_size = 200
-          if len(values["bottom_text"]) > 0:
-            mutable_message = word_wrap(img, draw, values["bottom_text"], int(img.width), 200)
-            draw.text(int(img.width/2), int(img.height)-20, mutable_message)
-            draw.draw(img)
-          outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
-          fintext = "Image saved as: " + outname
-          img.save(filename=outname)
-          img.transform(resize='500x500>')
-          finthumb = img.make_blob()
-          window.close()
-          window = export_window()
-          window["-IMAGE-"].update(finthumb)
-          window["fintext"].update(fintext)
+        outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+        fintext = "Image saved as: " + outname
+        img.save(filename=outname)
+        img.transform(resize='500x500>')
+        finthumb = img.make_blob()
+        window.close()
+        window = export_window()
+        window["-IMAGE-"].update(finthumb)
+        window["fintext"].update(fintext)
   window.close()
 
 if __name__ == '__main__':
