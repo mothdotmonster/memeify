@@ -3,13 +3,12 @@
 from wand.image import Image
 from wand.drawing import Drawing
 from wand.color import Color
-from PIL import Image as pillow
 from datetime import datetime
-import os, io
+import os
 import PySimpleGUI as sg
 from gi.repository import GLib
 
-version = "memeify 0.0.1"
+version = "memeify 0.0.2"
 
 def word_wrap(image, draw, text, roi_width, roi_height):
     """Break long text to multiple lines, and reduce point size
@@ -72,11 +71,10 @@ while True:
     break
   if event == "load image":
     if os.path.exists(values["-FILE-"]):
-      image = pillow.open(values["-FILE-"])
-      image.thumbnail((500, 500))
-      bio = io.BytesIO()
-      image.save(bio, format="PNG")
-      window["-IMAGE-"].update(data=bio.getvalue())
+      with Image(filename=values["-FILE-"]) as img:
+        img.transform(resize='500x500>')
+        thumb = img.make_blob()
+        window["-IMAGE-"].update(thumb)
   elif event == "memeify!":
     with Image(filename=values["-FILE-"]) as img:
       with Drawing() as draw:
@@ -86,11 +84,10 @@ while True:
         window.close()
 
 fintext = "Image saved to: " + outname
-image = pillow.open(outname)
-image.thumbnail((500, 500))
-bio = io.BytesIO()
-image.save(bio, format="PNG")
-layout=[[sg.Image(data=bio.getvalue(), expand_x=True, expand_y=True)],
+with Image(filename=outname) as img:
+  img.transform(resize='500x500>')
+  finthumb = img.make_blob()
+layout=[[sg.Image(data=finthumb, expand_x=True, expand_y=True)],
   [sg.Text(fintext, expand_x=True, justification="center")]]
 window = sg.Window("memeification complete!", layout, size=(600,600))
 
