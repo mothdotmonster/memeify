@@ -9,7 +9,7 @@ import PySimpleGUI as sg
 import numpy as np
 from gi.repository import GLib
 
-version = "memeify 0.2.1 (linux)"
+version = "memeify 0.2.2 (linux)"
 
 sg.theme('DarkAmber') # i like it
 
@@ -81,6 +81,8 @@ def explode(image):
 
 def invert(image): # obscenely complicated image inverting
   with Image(blob=image) as img:
+    img.alpha_channel = 'remove' #close alpha channel   
+    img.background_color = Color('white')
     array = np.array(img) # convert image into array
     with Image.from_array(np.invert(array), channel_map="rgb") as img: # invert array and turn it back into an image
       img.format = 'png' # make sure it's a png so nothing else breaks
