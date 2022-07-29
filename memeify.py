@@ -8,7 +8,7 @@ import os
 import PySimpleGUI as sg
 import numpy as np
 
-version = "memeify 0.2.2"
+version = "memeify 0.2.3"
 
 sg.theme('DarkAmber') # i like it
 
@@ -35,6 +35,14 @@ def word_wrap(image, draw, text, roi_width, roi_height):
     raise RuntimeError("Unable to calculate word_wrap for " + text)
   return mutable_message
 
+def thumbnail(image, size): # turn an image into a thumbnail
+  with Image(blob=image) as img:
+    if img.height > img.width:
+      img.sample(height=size, width=int((img.width/img.height)*size))
+    else:
+      img.sample(width=size, height=int((img.height/img.width)*size))
+    return img.make_blob()
+
 def caption(image, top_text, bottom_text): # given an image (as a blob), caption it
   with Image(blob=image) as img:
     with Drawing() as draw:
@@ -55,17 +63,22 @@ def caption(image, top_text, bottom_text): # given an image (as a blob), caption
         draw.draw(img)
       return img.make_blob()
 
-def deep_fry(image):
+def deep_fry(image): # attempts to deep fry image
   with Image(blob=image) as img:
     img.transform(resize='200x200>')
-    img.posterize(levels=4)
+    img.posterize(levels=16)
+    img.compression_quality = 20
     img.format = "jpg"
+    df = img.make_blob()
+  with Image(blob=df) as img:
     img.format = "png"
+    img.transform(resize='1000x1000<')
     return img.make_blob()
 
-def liquid_rescale(image):
+def liquid_rescale(image): 
   with Image(blob=image) as img:
     img.liquid_rescale(height=int(img.height/2), width=int(img.width/2))
+    img.transform(resize='1000x1000<')
     return img.make_blob()
 
 def implode(image):
@@ -83,9 +96,9 @@ def invert(image): # obscenely complicated image inverting
     img.alpha_channel = 'remove' #close alpha channel   
     img.background_color = Color('white') 
     array = np.array(img) # convert image into array
-    with Image.from_array(np.invert(array), channel_map="rgb") as img: # invert array and turn it back into an image
-      img.format = 'png' # make sure it's a png so nothing else breaks
-      return img.make_blob()
+  with Image.from_array(np.invert(array), channel_map="rgb") as img: # invert array and turn it back into an image
+    img.format = 'png' # make sure it's a png so nothing else breaks
+    return img.make_blob()
 
 def swirl(image):
   with Image(blob=image) as img:
@@ -100,12 +113,13 @@ def rotational_blur(image):
 def meme_window(): # main meme-making window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-    [sg.T("")],[sg.Text("", expand_x=True,), sg.Text("choose a picture: "), sg.FileBrowse(key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
+    [sg.Text("", expand_x=True),sg.Text("", key="filedisplay"),sg.Text("", expand_x=True)],
+    [sg.Text("", expand_x=True),sg.Text("choose an image: "),sg.FileBrowse(target="filedisplay",key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
     [sg.Text("filter:"), sg.DropDown(['deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur'], key = "filter", expand_x=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
-  return sg.Window(version, layout, size=(600,700), finalize=True)
+  return sg.Window(version, layout, icon='icon.png', size=(600,700), finalize=True)
 
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
@@ -114,13 +128,13 @@ def ouroborous_window(): # special version without file selector as to stop user
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
-  return sg.Window(version, layout, size=(600,700), finalize=True)
+  return sg.Window(version, layout, icon='icon.png', size=(600,700), finalize=True)
 
 def export_window(): # output window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.Text(key="fintext", expand_x=True, justification="center")]]
-  return sg.Window("memeification complete!", layout, size=(600,600), finalize=True)
+  return sg.Window("memeification complete!", layout, icon='icon.png', size=(600,600), finalize=True)
 
 def main():
   window = meme_window() # open starting window
@@ -134,9 +148,7 @@ def main():
         with Image(filename=infile) as img:
           img.format = 'png'
           meme = img.make_blob()
-          img.transform(resize='500x500>')
-          thumb = img.make_blob()
-          window["-IMAGE-"].update(thumb)
+        window["-IMAGE-"].update(thumbnail(meme, 500))
     elif event == "memeify!":
       meme = caption(meme, values["top_text"], values["bottom_text"])
       if values["filter"] == "liquid rescale":
@@ -153,40 +165,18 @@ def main():
         meme = deep_fry(meme)
       if values["filter"] == "rotational blur":
         meme = rotational_blur(meme)
-
-      with Image(blob=meme) as img:
-        img.transform(resize='500x500>')
-        thumb = img.make_blob()
-        window.close()
-        window = ouroborous_window() # and so the meme eats its own tail
-        window["-IMAGE-"].update(thumb)
+      window.close()
+      window = ouroborous_window() # and so the meme eats its own tail
+      window["-IMAGE-"].update(thumbnail(meme, 500))
     elif event == "export!":
-      meme = caption(meme, values["top_text"], values["bottom_text"])
-      if values["filter"] == "liquid rescale":
-        meme = liquid_rescale(meme)
-      if values["filter"] == "implode":
-        meme = implode(meme)
-      if values["filter"] == "explode":
-        meme = explode(meme)
-      if values["filter"] == "invert":
-        meme = invert(meme)
-      if values["filter"] == "swirl":
-        meme = swirl(meme)
-      if values["filter"] == "deep fry":
-        meme = deep_fry(meme)
-      if values["filter"] == "rotational blur":
-        meme = rotational_blur(meme)
-
+      outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+      fintext = "Image saved as: " + outname
       with Image(blob=meme) as img:
-        outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
-        fintext = "Image saved as: " + outname
         img.save(filename=outname)
-        img.transform(resize='500x500>')
-        finthumb = img.make_blob()
-        window.close()
-        window = export_window()
-        window["-IMAGE-"].update(finthumb)
-        window["fintext"].update(fintext)
+      window.close()
+      window = export_window()
+      window["-IMAGE-"].update(thumbnail(meme, 500))
+      window["fintext"].update(fintext)
   window.close()
 
 if __name__ == '__main__':

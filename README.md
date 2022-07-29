@@ -1,4 +1,4 @@
-# memeify
+![memeify logo](images/logo.png)
 
 ![GUI example](images/demo.png)
 
