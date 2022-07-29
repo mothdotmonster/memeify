@@ -123,7 +123,7 @@ def meme_window(): # main meme-making window
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
-  return sg.Window(version, layout, icon=resource_path('icons\icon.png'), size=(600,700), finalize=True)
+  return sg.Window(version, layout, icon=resource_path('icons\icon.ico'), size=(600,700), finalize=True)
 
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
@@ -132,13 +132,13 @@ def ouroborous_window(): # special version without file selector as to stop user
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
-  return sg.Window(version, layout, icon=resource_path('icons\icon.png'), size=(600,700), finalize=True)
+  return sg.Window(version, layout, icon=resource_path('icons\icon.ico'), size=(600,700), finalize=True)
 
 def export_window(): # output window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.Text(key="fintext", expand_x=True, justification="center")]]
-  return sg.Window("memeification complete!", layout, icon=resource_path('icons\icon.png'), size=(600,600), finalize=True)
+  return sg.Window("memeification complete!", layout, icon=resource_path('icons\icon.ico'), size=(600,600), finalize=True)
 
 def main():
   window = meme_window() # open starting window
