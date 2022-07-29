@@ -8,7 +8,7 @@ import os
 import PySimpleGUI as sg
 import numpy as np
 
-version = "memeify 0.2.2"
+version = "memeify 0.2.2 (windows)"
 
 sg.theme('DarkAmber') # i like it
 
@@ -81,7 +81,7 @@ def explode(image):
 def invert(image): # obscenely complicated image inverting
   with Image(blob=image) as img:
     img.alpha_channel = 'remove' #close alpha channel   
-    img.background_color = Color('white') 
+    img.background_color = Color('white')
     array = np.array(img) # convert image into array
     with Image.from_array(np.invert(array), channel_map="rgb") as img: # invert array and turn it back into an image
       img.format = 'png' # make sure it's a png so nothing else breaks
@@ -178,7 +178,7 @@ def main():
         meme = rotational_blur(meme)
 
       with Image(blob=meme) as img:
-        outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+        outname = os.path.expanduser('~\Pictures') + "\memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
         fintext = "Image saved as: " + outname
         img.save(filename=outname)
         img.transform(resize='500x500>')
