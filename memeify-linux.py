@@ -4,7 +4,7 @@ from wand.image import Image
 from wand.drawing import Drawing
 from wand.color import Color
 from datetime import datetime
-import os
+import os, sys
 import PySimpleGUI as sg
 import numpy as np
 from gi.repository import GLib
@@ -12,6 +12,10 @@ from gi.repository import GLib
 version = "memeify 0.2.3 (linux)"
 
 sg.theme('DarkAmber') # i like it
+
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
 def word_wrap(image, draw, text, roi_width, roi_height):
   # Reduce point size until all text fits within a bounding box.
@@ -120,7 +124,7 @@ def meme_window(): # main meme-making window
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
-  return sg.Window(version, layout, icon='icon.png', size=(600,700), finalize=True)
+  return sg.Window(version, layout, icon=resource_path('icons/icon.png'), size=(600,700), finalize=True)
 
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
@@ -129,13 +133,13 @@ def ouroborous_window(): # special version without file selector as to stop user
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
-  return sg.Window(version, layout, icon='icon.png', size=(600,700), finalize=True)
+  return sg.Window(version, layout, icon=resource_path('icons/icon.png'), size=(600,700), finalize=True)
 
 def export_window(): # output window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.Text(key="fintext", expand_x=True, justification="center")]]
-  return sg.Window("memeification complete!", layout, icon='icon.png', size=(600,600), finalize=True)
+  return sg.Window("memeification complete!", layout, icon=resource_path('icons/icon.png'), size=(600,600), finalize=True)
 
 def main():
   window = meme_window() # open starting window
