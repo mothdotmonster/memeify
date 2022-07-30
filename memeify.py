@@ -8,8 +8,17 @@ import os, sys
 import PySimpleGUI as sg
 import numpy as np
 
-if sys.platform.startswith('linux'): # load Linux dependency if on Linux
+if sys.platform.startswith('linux'): # load Linux dependencies if on Linux
   from gi.repository import GLib
+
+if sys.platform.startswith('win'): # load Windows dependencies if on Windows
+  import ctypes
+  import ctypes.wintypes
+
+  def winpath(magic): # turns magic number into windows path
+    buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH) # create buffer for path to go into
+    ctypes.windll.shell32.SHGetFolderPathW(None, magic, None, 0, buf) # ctypes magic
+    return str(buf.value) # return path
 
 if sys.platform.startswith('win'): # change some paths if on Windows
   iconpath='icons\icon.ico'
@@ -184,7 +193,7 @@ def main():
       if sys.platform.startswith('linux'): # on linux, puts output image in ~/Pictures or equivalent
         outname = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) + "/memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
       elif sys.platform.startswith('win'): # on windows, puts output image in ~\Pictures (make better later)
-        outname = os.path.expanduser('~\Pictures') + "\memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+        outname = winpath(0x0027) + "\memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
       else: # fallback, puts output image in current directory
         outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
       fintext = "Image saved as: " + outname
