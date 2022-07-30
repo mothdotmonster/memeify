@@ -8,6 +8,14 @@ import os, sys
 import PySimpleGUI as sg
 import numpy as np
 
+if sys.platform.startswith('linux'): # load Linux dependency if on Linux
+  from gi.repository import GLib
+
+if sys.platform.startswith('win'): # change some paths if on Windows
+  iconpath='icons\icon.ico'
+else:
+  iconpath='icons/icon.png'
+
 version = "memeify 0.2.3"
 
 sg.theme('DarkAmber') # i like it
@@ -123,7 +131,7 @@ def meme_window(): # main meme-making window
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
-  return sg.Window(version, layout, icon=resource_path('icons/icon.png'), size=(600,700), finalize=True)
+  return sg.Window(version, layout, icon=resource_path(iconpath), size=(600,700), finalize=True)
 
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
@@ -132,13 +140,13 @@ def ouroborous_window(): # special version without file selector as to stop user
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
-  return sg.Window(version, layout, icon=resource_path('icons/icon.png'), size=(600,700), finalize=True)
+  return sg.Window(version, layout, icon=resource_path(iconpath), size=(600,700), finalize=True)
 
 def export_window(): # output window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.Text(key="fintext", expand_x=True, justification="center")]]
-  return sg.Window("memeification complete!", layout, icon=resource_path('icons/icon.png'), size=(600,600), finalize=True)
+  return sg.Window("memeification complete!", layout, icon=resource_path(iconpath), size=(600,600), finalize=True)
 
 def main():
   window = meme_window() # open starting window
@@ -173,7 +181,12 @@ def main():
       window = ouroborous_window() # and so the meme eats its own tail
       window["-IMAGE-"].update(thumbnail(meme, 500))
     elif event == "export!":
-      outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+      if sys.platform.startswith('linux'): # on linux, puts output image in ~/Pictures or equivalent
+        outname = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) + "/memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+      elif sys.platform.startswith('win'): # on windows, puts output image in ~\Pictures (make better later)
+        outname = os.path.expanduser('~\Pictures') + "\memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+      else: # fallback, puts output image in current directory
+        outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
       fintext = "Image saved as: " + outname
       with Image(blob=meme) as img:
         img.save(filename=outname)
