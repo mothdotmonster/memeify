@@ -25,7 +25,7 @@ if sys.platform.startswith('win'): # change some paths if on Windows
 else:
   iconpath='icons/icon.png'
 
-version = "memeify 0.2.4"
+version = "memeify 0.2.5"
 
 sg.theme('DarkAmber') # i like it
 
@@ -108,12 +108,39 @@ def rotational_blur(image):
     img.rotational_blur(angle=10)
     return img.make_blob()
 
+def cubify(image):
+  with Image(blob=image) as top:
+    top.virtual_pixel = 'transparent'
+    top.resize(height=1000,width=1000)
+    top.distort('affine',
+    (0,0, 0,250,
+    1000,1000, 900,250,
+    0,1000, 450,500))
+    with Image(blob=image) as left:
+      left.virtual_pixel = 'transparent'
+      left.resize(height=1000,width=1000)
+      left.distort('affine',
+      (0,0, 0,250,
+      1000,1000, 450,1000,
+      1000,0, 450,500))
+      with Image(blob=image) as right:
+        right.virtual_pixel = 'transparent'
+        right.resize(height=1000,width=1000)
+        right.distort('affine',
+        (0,0, 450,500,
+        1000,0, 900,250,
+        0,1000, 450,1000))
+        right.composite(top)
+        right.composite(left)
+        right.crop(height=1000,width=900)
+        return right.make_blob()
+
 def meme_window(): # main meme-making window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.Text("", expand_x=True),sg.Text("", key="filedisplay"),sg.Text("", expand_x=True)],
     [sg.Text("", expand_x=True),sg.Text("choose an image: "),sg.FileBrowse(target="filedisplay",key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
-    [sg.Text("filter:"), sg.DropDown(['deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur'], key = "filter", expand_x=True)],
+    [sg.Text("filter:"), sg.DropDown(['deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -122,7 +149,7 @@ def meme_window(): # main meme-making window
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-    [sg.Text("filter:"), sg.DropDown(['deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur'], key = "filter", expand_x=True)],
+    [sg.Text("filter:"), sg.DropDown(['deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -163,6 +190,8 @@ def main():
         meme = deep_fry(meme)
       if values["filter"] == "rotational blur":
         meme = rotational_blur(meme)
+      if values["filter"] == "cubify":
+        meme = cubify(meme)
       window.close()
       window = ouroborous_window() # and so the meme eats its own tail
       window["-IMAGE-"].update(thumbnail(meme, 500))
