@@ -33,29 +33,6 @@ def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
 
-def word_wrap(image, draw, text, roi_width, roi_height):
-  # Reduce point size until all text fits within a bounding box.
-  mutable_message = text
-  iteration_attempts = 100
-
-  def eval_metrics(txt):
-    # Quick helper function to calculate width/height of text.
-    metrics = draw.get_font_metrics(image, txt, True)
-    return (metrics.text_width, metrics.text_height)
-
-  while draw.font_size > 0 and iteration_attempts:
-    iteration_attempts -= 1
-    width, height = eval_metrics(mutable_message)
-    if height > roi_height:
-      draw.font_size -= 2  # Reduce pointsize
-    elif width > roi_width:
-      draw.font_size -= 2  # Reduce pointsize
-    else:
-      break
-  if iteration_attempts < 1:
-    raise RuntimeError("Unable to calculate word_wrap for " + text)
-  return mutable_message
-
 def thumbnail(image, size): # turn an image into a thumbnail
   with Image(blob=image) as img:
     if img.height > img.width:
@@ -71,16 +48,16 @@ def caption(image, top_text, bottom_text): # given an image (as a blob), caption
       draw.stroke_width = 3
       draw.fill_color = Color('white')
       draw.font_family = 'Impact'
-      draw.font_size = 200
       draw.text_alignment = "center"
+      draw.font_size = 200
       if len(top_text) > 0:
-        mutable_message = word_wrap(img, draw, top_text, int(img.width), 200)
-        draw.text(int(img.width/2), int(draw.font_size), mutable_message)
+        draw.font_size = int((img.width/draw.get_font_metrics(img, top_text).text_width)*200)
+        draw.text(int(img.width/2), int(draw.font_size), top_text)
         draw.draw(img)
       draw.font_size = 200
       if len(bottom_text) > 0:
-        mutable_message = word_wrap(img, draw, bottom_text, int(img.width), 200)
-        draw.text(int(img.width/2), int(img.height)-20, mutable_message)
+        draw.font_size = int((img.width/draw.get_font_metrics(img, bottom_text).text_width)*200)
+        draw.text(int(img.width/2), int(img.height)-20, bottom_text)
         draw.draw(img)
       return img.make_blob()
 
