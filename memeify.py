@@ -51,12 +51,12 @@ def caption(image, top_text, bottom_text): # given an image (as a blob), caption
       draw.text_alignment = "center"
       draw.font_size = 200
       if len(top_text) > 0:
-        draw.font_size = int((img.width/draw.get_font_metrics(img, top_text).text_width)*200)
+        draw.font_size = min(200,int((img.width/draw.get_font_metrics(img, top_text).text_width)*200))
         draw.text(int(img.width/2), int(draw.font_size), top_text)
         draw.draw(img)
       draw.font_size = 200
       if len(bottom_text) > 0:
-        draw.font_size = int((img.width/draw.get_font_metrics(img, bottom_text).text_width)*200)
+        draw.font_size = min(200,int((img.width/draw.get_font_metrics(img, bottom_text).text_width)*200))
         draw.text(int(img.width/2), int(img.height)-20, bottom_text)
         draw.draw(img)
       return img.make_blob()
