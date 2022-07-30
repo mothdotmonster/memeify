@@ -25,7 +25,7 @@ if sys.platform.startswith('win'): # change some paths if on Windows
 else:
   iconpath='icons/icon.png'
 
-version = "memeify 0.2.3"
+version = "memeify 0.2.4"
 
 sg.theme('DarkAmber') # i like it
 
@@ -192,7 +192,7 @@ def main():
     elif event == "export!":
       if sys.platform.startswith('linux'): # on linux, puts output image in ~/Pictures or equivalent
         outname = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) + "/memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
-      elif sys.platform.startswith('win'): # on windows, puts output image in ~\Pictures (make better later)
+      elif sys.platform.startswith('win'): # on windows, puts output image in ~\Pictures or equivalent
         outname = winpath(0x0027) + "\memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
       else: # fallback, puts output image in current directory
         outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
