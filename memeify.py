@@ -11,19 +11,31 @@ import numpy as np
 if sys.platform.startswith('linux'): # load Linux dependencies if on Linux
   from gi.repository import GLib
 
-if sys.platform.startswith('win'): # load Windows dependencies if on Windows
+  def namegen(name):
+    return GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) + os.sep + name + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+
+elif sys.platform.startswith('win'): # load Windows dependencies if on Windows
   import ctypes
   import ctypes.wintypes
+
+  mypictures = 0x0027 # magic number for Pictures folder on windows
 
   def winpath(magic): # turns magic number into windows path
     buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH) # create buffer for path to go into
     ctypes.windll.shell32.SHGetFolderPathW(None, magic, None, 0, buf) # ctypes magic
     return str(buf.value) # return path
 
-if sys.platform.startswith('win'): # change some paths if on Windows
-  iconpath='icons\icon.ico'
+  def namegen(name): # put it all together
+    return winpath(mypictures) + os.sep + name + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+
 else:
-  iconpath='icons/icon.png'
+  def namegen(name): # fallback
+    return name + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+
+if sys.platform.startswith('win'): # change icon filetype if on Windows
+  iconpath = os.path.join("icons", "icon.ico")
+else:
+  iconpath = os.path.join("icons", "icon.png")
 
 version = "memeify 0.2.5"
 
@@ -140,18 +152,18 @@ def meme_window(): # main meme-making window
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.Text("", expand_x=True),sg.Text("", key="filedisplay"),sg.Text("", expand_x=True)],
     [sg.Text("", expand_x=True),sg.Text("choose an image: "),sg.FileBrowse(target="filedisplay",key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
-    [sg.Text("filter:"), sg.DropDown(['deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True)],
-    [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
-    [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
+    [sg.Text("filter:"), sg.DropDown(['caption', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
+    [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
+    [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
   return sg.Window(version, layout, icon=resource_path(iconpath), size=(600,700), finalize=True)
 
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-    [sg.Text("filter:"), sg.DropDown(['deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True)],
-    [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True)],
-    [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True)],
+    [sg.Text("filter:"), sg.DropDown(['caption', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
+    [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
+    [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
   return sg.Window(version, layout, icon=resource_path(iconpath), size=(600,700), finalize=True)
 
@@ -174,8 +186,16 @@ def main():
           img.format = 'png'
           meme = img.make_blob()
         window["-IMAGE-"].update(thumbnail(meme, 500))
+    elif event == "filter":
+      if values["filter"] == "caption":
+        window["top_text"].update(disabled=False)
+        window["bottom_text"].update(disabled=False)
+      else:
+        window["top_text"].update(disabled=True)
+        window["bottom_text"].update(disabled=True)
     elif event == "memeify!":
-      meme = caption(meme, values["top_text"], values["bottom_text"])
+      if values["filter"] == "caption":
+        meme = caption(meme, values["top_text"], values["bottom_text"])
       if values["filter"] == "liquid rescale":
         meme = liquid_rescale(meme)
       if values["filter"] == "implode":
@@ -196,12 +216,7 @@ def main():
       window = ouroborous_window() # and so the meme eats its own tail
       window["-IMAGE-"].update(thumbnail(meme, 500))
     elif event == "export!":
-      if sys.platform.startswith('linux'): # on linux, puts output image in ~/Pictures or equivalent
-        outname = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) + "/memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
-      elif sys.platform.startswith('win'): # on windows, puts output image in ~\Pictures or equivalent
-        outname = winpath(0x0027) + "\memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
-      else: # fallback, puts output image in current directory
-        outname = "memeify-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+      outname = namegen("memeify")
       fintext = "Image saved as: " + outname
       with Image(blob=meme) as img:
         img.save(filename=outname)
