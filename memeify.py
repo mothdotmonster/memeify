@@ -147,12 +147,41 @@ def cubify(image):
         right.crop(height=1000,width=900)
         return right.make_blob()
 
+def motivation(image, top_text, bottom_text):
+  with Image(blob=image) as img:
+    with Drawing() as draw:
+      img.transform("resize=800x800")
+      draw.font_family = "Times New Roman"
+      draw.font_size = 200
+      draw.text_alignment = "center"
+      if len(top_text) > 0: # avoid dividing by zero
+        topsize = min(200,int((img.width/draw.get_font_metrics(img, top_text).text_width)*200))
+      if len(bottom_text) > 0:
+        bottomsize = min(50,int((img.width/draw.get_font_metrics(img, bottom_text).text_width)*200))
+      img.border(Color("black"), 10, 10)
+      img.border(Color("white"), 5, 5)
+      img.border(Color("black"), 185, 185)
+      with Image(background = Color("black"), height = int(img.height+200), width = img.width) as sorry: # i'll figure out a better way to do this later
+        sorry.composite(img)
+        draw.fill_color = Color("white")
+        if len(top_text) > 0:
+          draw.font_size = topsize
+          draw.text(int(sorry.width/2), int(sorry.height - 200), top_text)
+          draw.draw(sorry)
+        draw.font_size = 200
+        if len(bottom_text) > 0:
+          draw.font_size = bottomsize
+          draw.text(int(sorry.width/2), int(sorry.height - 100), bottom_text)
+          draw.draw(sorry)
+        sorry.format = 'png'
+        return sorry.make_blob()
+
 def meme_window(): # main meme-making window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.Text("", expand_x=True),sg.Text("", key="filedisplay"),sg.Text("", expand_x=True)],
     [sg.Text("", expand_x=True),sg.Text("choose an image: "),sg.FileBrowse(target="filedisplay",key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
-    [sg.Text("filter:"), sg.DropDown(['caption', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
+    [sg.Text("filter:"), sg.DropDown(['caption', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -161,7 +190,7 @@ def meme_window(): # main meme-making window
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-    [sg.Text("filter:"), sg.DropDown(['caption', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
+    [sg.Text("filter:"), sg.DropDown(['caption', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -187,7 +216,7 @@ def main():
           meme = img.make_blob()
         window["-IMAGE-"].update(thumbnail(meme, 500))
     elif event == "filter":
-      if values["filter"] == "caption":
+      if values["filter"] == "caption" or values["filter"] == "motivational poster":
         window["top_text"].update(disabled=False)
         window["bottom_text"].update(disabled=False)
       else:
@@ -196,6 +225,8 @@ def main():
     elif event == "memeify!":
       if values["filter"] == "caption":
         meme = caption(meme, values["top_text"], values["bottom_text"])
+      if values["filter"] == "motivational poster":
+        meme = motivation(meme, values["top_text"], values["bottom_text"])
       if values["filter"] == "liquid rescale":
         meme = liquid_rescale(meme)
       if values["filter"] == "implode":
