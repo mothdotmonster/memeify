@@ -4,7 +4,7 @@ from wand.image import Image
 from wand.drawing import Drawing
 from wand.color import Color
 from datetime import datetime
-import os, sys
+import os, sys, textwrap
 import PySimpleGUI as sg
 import numpy as np
 
@@ -37,7 +37,7 @@ if sys.platform.startswith('win'): # change icon filetype if on Windows
 else:
   iconpath = os.path.join("icons", "icon.png")
 
-version = "memeify 0.2.5"
+version = "memeify 0.2.6"
 
 sg.theme('DarkAmber') # i like it
 
@@ -175,12 +175,26 @@ def motivation(image, top_text, bottom_text):
         sorry.format = 'png'
         return sorry.make_blob()
 
+def caption_neue(image, text):
+  with Image(blob=image) as img:
+    with Drawing() as draw:
+      mutable_text = "\n".join(textwrap.wrap(text, 25))
+      draw.font_family = "Arial"
+      draw.text_alignment = "center"
+      draw.font_size = int(img.width/15)
+      with Image(height = int((draw.get_font_metrics(img, mutable_text, multiline=True).text_height)+50+img.height), width = img.width, background = Color("white")) as cap:
+        draw.text(int(img.width/2), int((draw.font_size)+20), mutable_text)
+        draw.draw(cap)
+        cap.composite(img, top=int(cap.height-img.height))
+        cap.format = "png"
+        return cap.make_blob()
+      
 def meme_window(): # main meme-making window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.Text("", expand_x=True),sg.Text("", key="filedisplay"),sg.Text("", expand_x=True)],
     [sg.Text("", expand_x=True),sg.Text("choose an image: "),sg.FileBrowse(target="filedisplay",key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
-    [sg.Text("filter:"), sg.DropDown(['caption', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
+    [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -189,7 +203,7 @@ def meme_window(): # main meme-making window
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-    [sg.Text("filter:"), sg.DropDown(['caption', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
+    [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -218,12 +232,17 @@ def main():
       if values["filter"] == "caption" or values["filter"] == "motivational poster":
         window["top_text"].update(disabled=False)
         window["bottom_text"].update(disabled=False)
+      elif values["filter"] == "caption neue":
+        window["top_text"].update(disabled=False)
+        window["bottom_text"].update(disabled=True)
       else:
         window["top_text"].update(disabled=True)
         window["bottom_text"].update(disabled=True)
     elif event == "memeify!":
       if values["filter"] == "caption":
         meme = caption(meme, values["top_text"], values["bottom_text"])
+      if values["filter"] == "caption neue":
+        meme = caption_neue(meme, values["top_text"])
       if values["filter"] == "motivational poster":
         meme = motivation(meme, values["top_text"], values["bottom_text"])
       if values["filter"] == "liquid rescale":
