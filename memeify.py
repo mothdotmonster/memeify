@@ -149,7 +149,7 @@ def cubify(image):
 def motivation(image, top_text, bottom_text):
   with Image(blob=image) as img:
     with Drawing() as draw:
-      img.transform("resize=800x800")
+      img.transform(resize="800x800")
       draw.font_family = "Times New Roman"
       draw.font_size = 200
       draw.text_alignment = "center"
