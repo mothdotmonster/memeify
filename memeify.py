@@ -88,7 +88,6 @@ def deep_fry(image): # attempts to deep fry image
 def liquid_rescale(image): 
   with Image(blob=image) as img:
     img.liquid_rescale(height=int(img.height/2), width=int(img.width/2))
-    img.transform(resize='1000x1000<')
     return img.make_blob()
 
 def implode(image):
