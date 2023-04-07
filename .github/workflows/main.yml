@@ -23,8 +23,6 @@ jobs:
     name: Build for Windows
     runs-on: windows-latest
     steps: 
-      - name: Install ImageMagick
-        run: choco install imagemagick -PackageParameters InstallDevelopmentHeaders=true
       - name: Create Executable
         uses: sayyid5416/pyinstaller@v1
         with:
