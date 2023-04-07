@@ -37,7 +37,7 @@ if sys.platform.startswith('win'): # change icon filetype if on Windows
 else:
   iconpath = os.path.join("icons", "icon.png")
 
-version = "memeify 0.2.6"
+version = "memeify 0.2.7 (git version)"
 
 sg.theme('DarkAmber') # i like it
 
@@ -193,12 +193,19 @@ def caption_neue(image, text):
         cap.format = "png"
         return cap.make_blob()
       
+def pixel(image):
+  with Image(blob=image) as img:
+    img.transform(resize='128x128') # fit image into 128x128 square
+    img.sample(img.width*2, img.height*2)
+    img.ordered_dither('o4x4,6')
+    return img.make_blob()
+
 def meme_window(): # main meme-making window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.Text("", expand_x=True),sg.Text("", key="filedisplay"),sg.Text("", expand_x=True)],
     [sg.Text("", expand_x=True),sg.Text("choose an image: "),sg.FileBrowse(target="filedisplay",key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
-    [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
+    [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -207,7 +214,7 @@ def meme_window(): # main meme-making window
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-    [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify'], key = "filter", expand_x=True, enable_events=True)],
+    [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -265,6 +272,8 @@ def main():
         meme = rotational_blur(meme)
       if values["filter"] == "cubify":
         meme = cubify(meme)
+      if values["filter"] == "pixel art":
+        meme = pixel(meme)
       window.close()
       window = ouroborous_window() # and so the meme eats its own tail
       window["-IMAGE-"].update(thumbnail(meme, 500))
