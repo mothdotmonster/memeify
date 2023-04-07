@@ -241,7 +241,7 @@ def meme_window(): # main meme-making window
     [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
-    [sg.Button("memeify!", expand_x=True), sg.Button("preview!", expand_x=True), sg.Button("nevermind...", expand_x=True, disabled=True), sg.Button("export!", expand_x=True)]]
+    [sg.Button("memeify!", expand_x=True, disabled=True), sg.Button("preview!", expand_x=True, disabled=True), sg.Button("nevermind...", expand_x=True, disabled=True), sg.Button("export!", expand_x=True, disabled=True)]]
   return sg.Window(version, layout, icon=resource_path(iconpath), size=(600,700), finalize=True)
 
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
@@ -279,6 +279,9 @@ def main():
           img.format = 'png'
           meme = img.make_blob()
         window["-IMAGE-"].update(thumbnail(meme, 500))
+        window["memeify!"].update(disabled=False)
+        window["preview!"].update(disabled=False)
+        window["export!"].update(disabled=False)
     elif event == "filter":
       if values["filter"] == "caption" or values["filter"] == "motivational poster":
         window["top_text"].update(disabled=False)
