@@ -8,21 +8,21 @@ on:
 
 jobs:
   linux-build:
-    name: Build for Linux
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install GLib
-        run: sudo apt update && sudo apt install libgirepository1.0-dev gcc libcairo2-dev pkg-config python3-dev gir1.2-gtk-4.0
-      - name: Create Executable
-        uses: sayyid5416/pyinstaller@v1
-        with:
-          spec: 'src/memeify.spec'
-          requirements: 'src/requirements-linux.txt'
-          upload_exe_with_name: 'linux'
+    - name: Build for Linux
+      runs-on: ubuntu-latest
+      steps:
+        - name: Install GLib
+          run: sudo apt update && sudo apt install libgirepository1.0-dev gcc libcairo2-dev pkg-config python3-dev gir1.2-gtk-4.0
+        - name: Create Executable
+          uses: sayyid5416/pyinstaller@v1
+          with:
+            spec: 'src/memeify.spec'
+            requirements: 'src/requirements-linux.txt'
+            upload_exe_with_name: 'linux'
   windows-build:
-    name: Build for Windows
-    runs-on: windows-latest
-    steps:
+    - name: Build for Windows
+      runs-on: windows-latest
+      steps:
         uses: sayyid5416/pyinstaller@v1
         with:
           spec: 'src/memeify.spec'
