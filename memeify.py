@@ -241,7 +241,7 @@ def meme_window(): # main meme-making window
     [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
-    [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
+    [sg.Button("memeify!", expand_x=True), sg.Button("preview!", expand_x=True), sg.Button("nevermind...", expand_x=True, disabled=True), sg.Button("export!", expand_x=True)]]
   return sg.Window(version, layout, icon=resource_path(iconpath), size=(600,700), finalize=True)
 
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
@@ -250,7 +250,7 @@ def ouroborous_window(): # special version without file selector as to stop user
     [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
-    [sg.Button("memeify!", expand_x=True), sg.Button("nevermind...", expand_x=True), sg.Button("export!", expand_x=True)]]
+    [sg.Button("memeify!", expand_x=True), sg.Button("preview!", expand_x=True), sg.Button("nevermind...", expand_x=True), sg.Button("export!", expand_x=True)]]
   return sg.Window(version, layout, icon=resource_path(iconpath), size=(600,700), finalize=True)
 
 def export_window(): # output window
@@ -324,6 +324,38 @@ def main():
       if not oldmeme:
         window["nevermind..."].update(disabled=True)
       window["-IMAGE-"].update(thumbnail(meme, 500))
+    elif event == "preview!": # preview without doing the thing
+      if values["filter"] == "caption":
+        prememe = caption(meme, values["top_text"], values["bottom_text"])
+      if values["filter"] == "caption neue":
+        prememe = caption_neue(meme, values["top_text"])
+      if values["filter"] == "motivational poster":
+        prememe = motivation(meme, values["top_text"], values["bottom_text"])
+      if values["filter"] == "liquid rescale":
+        prememe = liquid_rescale(meme)
+      if values["filter"] == "implode":
+        prememe = implode(meme)
+      if values["filter"] == "explode":
+        prememe = explode(meme)
+      if values["filter"] == "invert":
+        prememe = invert(meme)
+      if values["filter"] == "swirl":
+        prememe = swirl(meme)
+      if values["filter"] == "deep fry":
+        prememe = deep_fry(meme)
+      if values["filter"] == "rotational blur":
+        prememe = rotational_blur(meme)
+      if values["filter"] == "cubify":
+        prememe = cubify(meme)
+      if values["filter"] == "pixel art":
+        prememe = pixel(meme)
+      if values["filter"] == "funny watermark":
+        prememe = funnymark(meme)
+      if values["filter"] == "flippy watermark":
+        prememe = flipmark(meme)
+      if values["filter"] == "made with":
+        prememe = madewith(meme, values["top_text"])
+      window["-IMAGE-"].update(thumbnail(prememe, 500))
     elif event == "export!":
       outname = namegen("memeify")
       fintext = "Image saved as: " + outname
