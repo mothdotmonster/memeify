@@ -23,8 +23,9 @@ jobs:
     name: Build for Windows
     runs-on: windows-latest
     steps:
-      uses: sayyid5416/pyinstaller@v1
-      with:
-        spec: 'src/memeify.spec'
-        requirements: 'src/requirements-windows.txt'
-        upload_exe_with_name: 'windows'
+      - name: Create Executable
+        uses: sayyid5416/pyinstaller@v1
+        with:
+          spec: 'src/memeify.spec'
+          requirements: 'src/requirements-windows.txt'
+          upload_exe_with_name: 'windows'
