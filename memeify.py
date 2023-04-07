@@ -38,6 +38,7 @@ else:
   iconpath = os.path.join("icons", "icon.png")
 
 version = "memeify 0.2.7 (git version)"
+oldmeme = [] # a special tool that will help us later
 
 sg.theme('DarkAmber') # i like it
 
@@ -249,7 +250,7 @@ def ouroborous_window(): # special version without file selector as to stop user
     [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
-    [sg.Button("nevermind...", expand_x=True),sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
+    [sg.Button("memeify!", expand_x=True), sg.Button("nevermind...", expand_x=True), sg.Button("export!", expand_x=True)]]
   return sg.Window(version, layout, icon=resource_path(iconpath), size=(600,700), finalize=True)
 
 def export_window(): # output window
@@ -282,7 +283,7 @@ def main():
         window["top_text"].update(disabled=True)
         window["bottom_text"].update(disabled=True)
     elif event == "memeify!":
-      oldmeme = meme
+      oldmeme.append(meme) # stack up our old memes
       if values["filter"] == "caption":
         meme = caption(meme, values["top_text"], values["bottom_text"])
       if values["filter"] == "caption neue":
@@ -317,9 +318,11 @@ def main():
       window = ouroborous_window() # and so the meme eats its own tail
       window["-IMAGE-"].update(thumbnail(meme, 500))
     elif event == "nevermind...": # undo button
-      meme = oldmeme
+      meme = oldmeme.pop() # pop an old meme off the stack
       window.close()
       window = ouroborous_window()
+      if not oldmeme:
+        window["nevermind..."].update(disabled=True)
       window["-IMAGE-"].update(thumbnail(meme, 500))
     elif event == "export!":
       outname = namegen("memeify")
