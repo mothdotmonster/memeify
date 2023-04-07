@@ -21,8 +21,8 @@ jobs:
 
     - name: Package for Linux
       uses: JackMcKew/pyinstaller-action-linux@main
-        with:
-          path: src
+      with:
+        path: src
           
     - uses: actions/upload-artifact@v2
       with:
