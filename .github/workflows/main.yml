@@ -20,7 +20,7 @@ jobs:
         path: src
 
     - name: Package for Linux
-      uses: JackMcKew/pyinstaller-action-linux@main
+      uses: mothdotmonster/pyinstaller-action-linux@memeify
       with:
         path: src
           
