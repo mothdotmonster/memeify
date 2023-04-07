@@ -54,7 +54,7 @@ def thumbnail(image, size): # turn an image into a thumbnail
     return img.make_blob()
 
 def caption(image, top_text, bottom_text): # given an image (as a blob), caption it
-  with Image(blob=image) as img:
+  with Image(blob=thumbnail(image, 1024)) as img: # make sure image is reasonably sized
     with Drawing() as draw:
       draw.stroke_color = "black"
       draw.stroke_width = 3
