@@ -16,4 +16,3 @@ jobs:
           spec: 'src/memeify.spec'
           requirements: 'src/requirements.txt'
           upload_exe_with_name: 'linux'
-          options: -F, -w
