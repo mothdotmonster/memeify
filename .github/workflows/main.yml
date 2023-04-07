@@ -14,12 +14,22 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Package Application for Windows
+    - name: Package for Windows
       uses: JackMcKew/pyinstaller-action-windows@main
       with:
         path: src
 
+    - name: Package for Linux
+      uses: JackMcKew/pyinstaller-action-linux@main
+        with:
+          path: src
+          
     - uses: actions/upload-artifact@v2
       with:
-        name: windows-build
-        path: build/dist/windows
+        name: windows
+        path: src/dist/windows
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: linux
+        path: src/dist/linux
