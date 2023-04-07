@@ -249,7 +249,7 @@ def ouroborous_window(): # special version without file selector as to stop user
     [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
-    [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
+    [sg.Button("nevermind...", expand_x=True),sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
   return sg.Window(version, layout, icon=resource_path(iconpath), size=(600,700), finalize=True)
 
 def export_window(): # output window
@@ -282,6 +282,7 @@ def main():
         window["top_text"].update(disabled=True)
         window["bottom_text"].update(disabled=True)
     elif event == "memeify!":
+      oldmeme = meme
       if values["filter"] == "caption":
         meme = caption(meme, values["top_text"], values["bottom_text"])
       if values["filter"] == "caption neue":
@@ -314,6 +315,11 @@ def main():
         meme = madewith(meme, values["top_text"])
       window.close()
       window = ouroborous_window() # and so the meme eats its own tail
+      window["-IMAGE-"].update(thumbnail(meme, 500))
+    elif event == "nevermind...": # undo button
+      meme = oldmeme
+      window.close()
+      window = ouroborous_window()
       window["-IMAGE-"].update(thumbnail(meme, 500))
     elif event == "export!":
       outname = namegen("memeify")
