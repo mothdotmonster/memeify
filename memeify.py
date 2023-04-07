@@ -12,7 +12,7 @@ if sys.platform.startswith('linux'): # load Linux dependencies if on Linux
   from gi.repository import GLib
 
   def namegen(name):
-    return GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) + os.sep + name + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+    return GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES) + os.sep + name + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".jpg"
 
 elif sys.platform.startswith('win'): # load Windows dependencies if on Windows
   import ctypes
@@ -26,11 +26,11 @@ elif sys.platform.startswith('win'): # load Windows dependencies if on Windows
     return str(buf.value) # return path
 
   def namegen(name): # put it all together
-    return winpath(mypictures) + os.sep + name + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+    return winpath(mypictures) + os.sep + name + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".jpg"
 
 else:
   def namegen(name): # fallback
-    return name + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".png"
+    return name + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".jpg"
 
 if sys.platform.startswith('win'): # change icon filetype if on Windows
   iconpath = os.path.join("icons", "icon.ico")
