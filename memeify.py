@@ -199,13 +199,23 @@ def pixel(image):
     img.sample(img.width*2, img.height*2)
     img.ordered_dither('o4x4,6')
     return img.make_blob()
+  
+def funnymark(image):
+  with Image(blob=image) as img:
+    with Image(filename=resource_path(os.path.join('icons', 'funnywatermark.png'))) as watermark:
+      watermark.background_color = Color("#222")
+      watermark.splice(width=img.width-watermark.width, height=0, gravity='west')
+      img.image_add(watermark)
+    img.montage(mode='concatenate', tile='1x2')
+    img.format = "png"
+    return img.make_blob()
 
 def meme_window(): # main meme-making window
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
     [sg.Text("", expand_x=True),sg.Text("", key="filedisplay"),sg.Text("", expand_x=True)],
     [sg.Text("", expand_x=True),sg.Text("choose an image: "),sg.FileBrowse(target="filedisplay",key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
-    [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art'], key = "filter", expand_x=True, enable_events=True)],
+    [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -214,7 +224,7 @@ def meme_window(): # main meme-making window
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
   layout = [
     [sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-    [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art'], key = "filter", expand_x=True, enable_events=True)],
+    [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
     [sg.Button("memeify!", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -274,6 +284,8 @@ def main():
         meme = cubify(meme)
       if values["filter"] == "pixel art":
         meme = pixel(meme)
+      if values["filter"] == "funny watermark":
+        meme = funnymark(meme)
       window.close()
       window = ouroborous_window() # and so the meme eats its own tail
       window["-IMAGE-"].update(thumbnail(meme, 500))
