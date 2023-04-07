@@ -260,7 +260,14 @@ def export_window(): # output window
   return sg.Window("memeification complete!", layout, icon=resource_path(iconpath), size=(600,600), finalize=True)
 
 def main():
-  window = meme_window() # open starting window
+  if len(sys.argv) != 1:
+    window = ouroborous_window() # take us to the good part already!
+    with Image(filename=sys.argv[1]) as img:
+      img.format = 'png'
+      meme = img.make_blob()
+    window["-IMAGE-"].update(thumbnail(meme, 500))
+  else:
+    window = meme_window() # open starting window
   while True: # main event loop
     window, event, values = sg.read_all_windows()
     if event == sg.WIN_CLOSED or event == 'Exit':
