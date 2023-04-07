@@ -1,5 +1,5 @@
-![memeify logo](images/logo.png)
+![memeify](images/logo.png)
 
-![GUI example](images/demo.png)
+![GUI example](images/screenshpt.png)
 
 a meme making python script with a simple GUI
