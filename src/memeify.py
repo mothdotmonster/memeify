@@ -223,6 +223,8 @@ def flipmark(image):
     return img.make_blob()
   
 def madewith(image, text):
+  if not text:
+    text = "made with memeify"
   with Image(blob=image) as img:
     with Drawing() as draw:
       draw.font_family = "Arial-Bold"
