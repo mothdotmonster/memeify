@@ -37,7 +37,7 @@ if sys.platform.startswith('win'): # change icon filetype if on Windows
 else:
   iconpath = os.path.join("icons", "icon.png")
 
-version = "memeify 0.3.0"
+version = "memeify 0.3.1"
 oldmeme = [] # a special tool that will help us later
 
 sg.theme('DarkAmber') # i like it
@@ -223,6 +223,8 @@ def flipmark(image):
     return img.make_blob()
   
 def madewith(image, text):
+  if not text:
+    text = "made with memeify"
   with Image(blob=image) as img:
     with Drawing() as draw:
       draw.font_family = "Arial-Bold"
@@ -241,7 +243,7 @@ def meme_window(): # main meme-making window
     [sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
     [sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
     [sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
-    [sg.Button("memeify!", expand_x=True), sg.Button("preview!", expand_x=True), sg.Button("nevermind...", expand_x=True, disabled=True), sg.Button("export!", expand_x=True)]]
+    [sg.Button("memeify!", expand_x=True, disabled=True), sg.Button("preview!", expand_x=True, disabled=True), sg.Button("nevermind...", expand_x=True, disabled=True), sg.Button("export!", expand_x=True, disabled=True)]]
   return sg.Window(version, layout, icon=resource_path(iconpath), size=(600,700), finalize=True)
 
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
@@ -260,7 +262,14 @@ def export_window(): # output window
   return sg.Window("memeification complete!", layout, icon=resource_path(iconpath), size=(600,600), finalize=True)
 
 def main():
-  window = meme_window() # open starting window
+  if len(sys.argv) != 1:
+    window = ouroborous_window() # take us to the good part already!
+    with Image(filename=sys.argv[1]) as img:
+      img.format = 'png'
+      meme = img.make_blob()
+    window["-IMAGE-"].update(thumbnail(meme, 500))
+  else:
+    window = meme_window() # open starting window
   while True: # main event loop
     window, event, values = sg.read_all_windows()
     if event == sg.WIN_CLOSED or event == 'Exit':
@@ -272,6 +281,9 @@ def main():
           img.format = 'png'
           meme = img.make_blob()
         window["-IMAGE-"].update(thumbnail(meme, 500))
+        window["memeify!"].update(disabled=False)
+        window["preview!"].update(disabled=False)
+        window["export!"].update(disabled=False)
     elif event == "filter":
       if values["filter"] == "caption" or values["filter"] == "motivational poster":
         window["top_text"].update(disabled=False)
