@@ -57,20 +57,27 @@ def thumbnail(image, size): # turn an image into a thumbnail
 def caption(image, top_text, bottom_text): # given an image (as a blob), caption it
   with Image(blob=thumbnail(image, 1024)) as img: # make sure image is reasonably sized
     with Drawing() as draw:
+      toptextwidth = 100
+      bottomtextwidth = 100
       draw.stroke_color = "black"
       draw.stroke_width = 3
       draw.fill_color = Color('white')
       draw.font_family = 'Impact'
       draw.text_alignment = "center"
-      draw.font_size = 200
-      if len(top_text) > 0:
-        draw.font_size = min(200,int((img.width/draw.get_font_metrics(img, top_text).text_width)*200))
-        draw.text(int(img.width/2), int(draw.font_size), top_text)
+      draw.font_size = int(img.width/12)
+      if len(top_text) > 0: # this part gets soooo bad i am going to probably clean it up later sorry
+        mutable_top_text = "\n".join(textwrap.wrap(top_text, toptextwidth))
+        while draw.get_font_metrics(img, mutable_top_text, multiline=True).text_width > img.width*0.9:
+          toptextwidth -= 1
+          mutable_top_text = "\n".join(textwrap.wrap(top_text, toptextwidth))
+        draw.text(int(img.width/2), int(draw.font_size), mutable_top_text)
         draw.draw(img)
-      draw.font_size = 200
       if len(bottom_text) > 0:
-        draw.font_size = min(200,int((img.width/draw.get_font_metrics(img, bottom_text).text_width)*200))
-        draw.text(int(img.width/2), int(img.height)-20, bottom_text)
+        mutable_bottom_text = "\n".join(textwrap.wrap(bottom_text, bottomtextwidth))
+        while draw.get_font_metrics(img, mutable_bottom_text, multiline=True).text_width > img.width*0.9: 
+          bottomtextwidth -= 1
+          mutable_bottom_text = "\n".join(textwrap.wrap(bottom_text, bottomtextwidth))
+        draw.text(int(img.width/2), int(img.height-((draw.font_size*1.25)*mutable_bottom_text.count("\n"))-img.height/50), mutable_bottom_text)
         draw.draw(img)
       return img.make_blob()
 
