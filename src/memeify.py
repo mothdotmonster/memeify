@@ -33,9 +33,9 @@ else:
 		return name + "-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".jpg"
 
 if sys.platform.startswith('win'): # change icon filetype if on Windows
-	iconpath = os.path.join("icons", "icon.ico")
+	iconpath = os.path.join("res", "icon.ico")
 else:
-	iconpath = os.path.join("icons", "icon.png")
+	iconpath = os.path.join("res", "icon.png")
 
 version = "memeify 0.3.1"
 oldmeme = [] # a special tool that will help us later
@@ -212,7 +212,7 @@ def pixel(image):
 	
 def funnymark(image):
 	with Image(blob=image) as img:
-		with Image(filename=resource_path(os.path.join('icons', 'funnywatermark.png'))) as watermark:
+		with Image(filename=resource_path(os.path.join('res', 'funnywatermark.png'))) as watermark:
 			watermark.background_color = Color("#222")
 			watermark.splice(width=img.width-watermark.width, height=0, gravity='west')
 			img.image_add(watermark)
