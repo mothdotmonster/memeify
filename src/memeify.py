@@ -80,6 +80,26 @@ def caption(image, top_text, bottom_text): # given an image (as a blob), caption
 				draw.text(int(img.width/2), int(img.height-((draw.font_size*1.25)*mutable_bottom_text.count("\n"))-img.height/50), mutable_bottom_text)
 				draw.draw(img)
 			return img.make_blob()
+		
+def caption_old(image, top_text, bottom_text): # the old caption tool, mostly
+  with Image(blob=thumbnail(image, 1024)) as img: # make sure image is reasonably sized
+    with Drawing() as draw:
+      draw.stroke_color = "black"
+      draw.stroke_width = 3
+      draw.fill_color = Color('white')
+      draw.font_family = 'Impact'
+      draw.text_alignment = "center"
+      draw.font_size = 200
+      if len(top_text) > 0:
+        draw.font_size = min(200,int((img.width/draw.get_font_metrics(img, top_text).text_width)*190))
+        draw.text(int(img.width/2), int(draw.font_size), top_text)
+        draw.draw(img)
+      draw.font_size = 200
+      if len(bottom_text) > 0:
+        draw.font_size = min(200,int((img.width/draw.get_font_metrics(img, bottom_text).text_width)*190))
+        draw.text(int(img.width/2), int(img.height-(draw.font_size/4)), bottom_text)
+        draw.draw(img)
+      return img.make_blob()
 
 def deep_fry(image): # attempts to deep fry image
 	with Image(blob=image) as img:
@@ -249,7 +269,7 @@ def meme_window(): # main meme-making window
 		[sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
 		[sg.Text("", expand_x=True),sg.Text("", key="filedisplay"),sg.Text("", expand_x=True)],
 		[sg.Text("", expand_x=True),sg.Text("choose an image: "),sg.FileBrowse(target="filedisplay",key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
-		[sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
+		[sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'caption (old)', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
 		[sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
 		[sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
 		[sg.Button("memeify!", expand_x=True, disabled=True), sg.Button("preview!", expand_x=True, disabled=True), sg.Button("nevermind...", expand_x=True, disabled=True), sg.Button("export!", expand_x=True, disabled=True)]]
@@ -258,7 +278,7 @@ def meme_window(): # main meme-making window
 def ouroborous_window(): # special version without file selector as to stop users from ruining things
 	layout = [
 		[sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-		[sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
+		[sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'caption (old)', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
 		[sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
 		[sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
 		[sg.Button("memeify!", expand_x=True), sg.Button("preview!", expand_x=True), sg.Button("nevermind...", expand_x=True), sg.Button("export!", expand_x=True)]]
@@ -294,7 +314,7 @@ def main():
 				window["preview!"].update(disabled=False)
 				window["export!"].update(disabled=False)
 		elif event == "filter":
-			if values["filter"] == "caption" or values["filter"] == "motivational poster":
+			if values["filter"] == "caption" or values["filter"] == "motivational poster" or values["filter"] == "caption (old)":
 				window["top_text"].update(disabled=False)
 				window["bottom_text"].update(disabled=False)
 			elif values["filter"] == "caption neue" or values["filter"] == "made with":
@@ -307,6 +327,8 @@ def main():
 			oldmeme.append(meme) # stack up our old memes
 			if values["filter"] == "caption":
 				meme = caption(meme, values["top_text"], values["bottom_text"])
+			if values["filter"] == "caption (old)":
+				meme = caption_old(meme, values["top_text"], values["bottom_text"])
 			if values["filter"] == "caption neue":
 				meme = caption_neue(meme, values["top_text"])
 			if values["filter"] == "motivational poster":
@@ -348,6 +370,8 @@ def main():
 		elif event == "preview!": # preview without doing the thing
 			if values["filter"] == "caption":
 				prememe = caption(meme, values["top_text"], values["bottom_text"])
+			if values["filter"] == "caption (old)":
+				prememe = caption_old(meme, values["top_text"], values["bottom_text"])
 			if values["filter"] == "caption neue":
 				prememe = caption_neue(meme, values["top_text"])
 			if values["filter"] == "motivational poster":
