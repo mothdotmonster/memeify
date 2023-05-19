@@ -177,6 +177,8 @@ def motivation(image, top_text, bottom_text):
         return sorry.make_blob()
 
 def caption_neue(image, text):
+  if not text:
+    text = "top text"
   with Image(blob=image) as img:
     with Drawing() as draw:
       textwidth = 100
