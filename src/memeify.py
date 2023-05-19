@@ -193,7 +193,7 @@ def caption_neue(image, text):
       draw.font_family = "Arial"
       draw.text_alignment = "center"
       draw.font_size = int(img.width/15)
-      while draw.get_font_metrics(img, mutable_text, multiline=True).text_width > img.width: # horrible brute forcing, but it does technically work
+      while draw.get_font_metrics(img, mutable_text, multiline=True).text_width > img.width*0.9: # horrible brute forcing, but it does technically work
         textwidth -= 1
         mutable_text = "\n".join(textwrap.wrap(text, textwidth))
       with Image(height = int((draw.get_font_metrics(img, mutable_text, multiline=True).text_height)+50+img.height), width = img.width, background = Color("white")) as cap:
