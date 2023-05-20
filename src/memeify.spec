@@ -8,7 +8,7 @@ a = Analysis(
     ['memeify.py'],
     pathex=[],
     binaries=[],
-    datas=[('icons', 'icons')],
+    datas=[('res', 'res')],
     hiddenimports=[],
     hookspath=[],
     runtime_hooks=[],
