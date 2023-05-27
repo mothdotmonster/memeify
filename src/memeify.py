@@ -4,7 +4,7 @@ from wand.image import Image
 from wand.drawing import Drawing
 from wand.color import Color
 from datetime import datetime
-import os, sys, textwrap
+import os, sys, textwrap, plyer
 import PySimpleGUI as sg
 import numpy as np
 
@@ -37,7 +37,7 @@ if sys.platform.startswith('win'): # change icon filetype if on Windows
 else:
 	iconpath = os.path.join("res", "icon.png")
 
-version = "memeify 0.3.2"
+version = "memeify 0.3.3"
 oldmeme = [] # a special tool that will help us later
 
 sg.theme('DarkAmber') # i like it
@@ -267,8 +267,7 @@ def madewith(image, text):
 def meme_window(): # main meme-making window
 	layout = [
 		[sg.Image(key="-IMAGE-", expand_x=True, expand_y=True)],
-		[sg.Text("", expand_x=True),sg.Text("", key="filedisplay"),sg.Text("", expand_x=True)],
-		[sg.Text("", expand_x=True),sg.Text("choose an image: "),sg.FileBrowse(target="filedisplay",key="-FILE-"), sg.Button("load image"), sg.Text("", expand_x=True,)],
+		[sg.Text("", expand_x=True), sg.Button("open image", expand_x=True), sg.Text("", expand_x=True)],
 		[sg.Text("filter:"), sg.DropDown(['caption', 'caption neue', 'caption (old)', 'motivational poster', 'deep fry', 'liquid rescale', 'implode', 'explode', 'swirl', 'invert', 'rotational blur', 'cubify', 'pixel art', 'funny watermark', 'flippy watermark', 'made with'], key = "filter", expand_x=True, enable_events=True)],
 		[sg.Text("top text:"), sg.InputText(key="top_text", expand_x=True, disabled=True)],
 		[sg.Text("bottom text:"), sg.InputText(key="bottom_text", expand_x=True, disabled=True)],
@@ -303,8 +302,8 @@ def main():
 		window, event, values = sg.read_all_windows()
 		if event == sg.WIN_CLOSED or event == 'Exit':
 			break
-		elif event == "load image":
-			infile = values["-FILE-"]
+		elif event == "open image":
+			infile = str(plyer.filechooser.open_file(multiple = False, filters = ['*.png', '*.jpg', '*.jpeg', '*.webp'])[0])
 			if os.path.exists(infile):
 				with Image(filename=infile) as img:
 					img.format = 'png'
