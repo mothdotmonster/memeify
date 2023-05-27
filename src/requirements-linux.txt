@@ -3,3 +3,4 @@ PySimpleGui
 wand
 pycairo
 PyGObject
+plyer
