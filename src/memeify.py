@@ -304,7 +304,6 @@ def main():
 			break
 		elif event == "open image":
 			infile = str(plyer.filechooser.open_file(multiple = False, filters = ['*.png', '*.jpg', '*.jpeg', '*.webp'])[0])
-			print(infile)
 			if os.path.exists(infile):
 				with Image(filename=infile) as img:
 					img.format = 'png'
