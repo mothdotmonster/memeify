@@ -37,7 +37,7 @@ if sys.platform.startswith('win'): # change icon filetype if on Windows
 else:
 	iconpath = os.path.join("res", "icon.png")
 
-version = "memeify 0.3.2"
+version = "memeify 0.3.3"
 oldmeme = [] # a special tool that will help us later
 
 sg.theme('DarkAmber') # i like it
