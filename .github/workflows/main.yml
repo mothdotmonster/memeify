@@ -16,7 +16,7 @@ jobs:
       - name: Create Executable
         uses: sayyid5416/pyinstaller@v1
         with:
-          spec: 'src/memeify.spec'
+          spec: 'src/linux.spec'
           requirements: 'src/requirements-linux.txt'
           upload_exe_with_name: 'linux'
   windows-build:
@@ -26,6 +26,6 @@ jobs:
       - name: Create Executable
         uses: sayyid5416/pyinstaller@v1
         with:
-          spec: 'src/memeify.spec'
+          spec: 'src/windows.spec'
           requirements: 'src/requirements-windows.txt'
           upload_exe_with_name: 'windows'
